@@ -24,7 +24,7 @@ class Spec:
         return wrapper
     
     def when(self, *args):
-        for action in args:
+        for i in range(0, len(args)):
             self._call_stack.pop().result()
         return self
     
