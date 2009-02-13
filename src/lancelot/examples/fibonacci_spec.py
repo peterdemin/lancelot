@@ -1,6 +1,7 @@
 import lancelot
 
 def fib(ordinal=0):
+    ''' Simple and inefficent fibonacci generator with some type checking '''
     if ordinal < 0:
         raise ValueError('fib({0}) is undefined'.format(ordinal))
     seed_values = {0:1, 1:1}
@@ -11,6 +12,7 @@ def fib(ordinal=0):
 
 @lancelot.verifiable
 def specify_fib_zero_to_five():
+    ''' Spec(standalone-fn).standalone-fn(args).should_be(value) '''
     spec = lancelot.Spec(fib)
     spec.fib(0).should_be(1)
     spec.fib(1).should_be(1)
@@ -23,6 +25,7 @@ def specify_fib_zero_to_five():
         
 @lancelot.verifiable
 def specify_fib_zero_to_five_with_named_ordinal():
+    ''' Spec(standalone-fn).standalone-fn(kwds).should_be(value) '''
     spec = lancelot.Spec(fib)
     spec.fib(ordinal=0).should_be(1)
     spec.fib(ordinal=1).should_be(1)
@@ -35,6 +38,7 @@ def specify_fib_zero_to_five_with_named_ordinal():
     
 @lancelot.verifiable
 def specify_invalid_args_for_fib():
+    ''' Spec(standalone-fn).standalone-fn(args).should_raise(...) '''
     spec = lancelot.Spec(fib)
     spec.fib(6).should_not_raise(Exception)
     spec.fib('a').should_raise(Exception)
@@ -48,4 +52,5 @@ def specify_invalid_args_for_fib():
     spec.fib(-2).should_raise(ValueError('fib(-2) is undefined'))
 
 if __name__ == '__main__':
+    ''' Verify all the specs as a collection '''
     lancelot.verify()
