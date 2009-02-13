@@ -56,5 +56,5 @@ def observable_should_notify_observer():
     spec.should_collaborate_with(observer.notify(observable).successive_times(2))
     
 if __name__ == '__main__':
-    ''' Verify all the specs as a collection '''
+    # Verify all the specs as a collection 
     lancelot.verify()

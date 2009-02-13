@@ -52,5 +52,5 @@ def specify_invalid_args_for_fib():
     spec.fib(-2).should_raise(ValueError('fib(-2) is undefined'))
 
 if __name__ == '__main__':
-    ''' Verify all the specs as a collection '''
+    # Verify all the specs as a collection 
     lancelot.verify()

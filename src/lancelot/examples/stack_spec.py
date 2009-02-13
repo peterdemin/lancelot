@@ -67,5 +67,5 @@ def specify_can_pop_and_peek_pushed_values_from_stack():
     spec.then(spec.peek()).should_raise(IndexError)
     
 if __name__ == '__main__':
-    ''' Verify all the specs as a collection '''
+    # Verify all the specs as a collection 
     lancelot.verify()

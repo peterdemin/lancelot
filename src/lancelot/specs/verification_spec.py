@@ -9,7 +9,7 @@ class SilentListener(ConsoleListener):
         pass
     
 def all_verifiable_with_silent_listener():
-    return AllVerifiable(progress_listener=SilentListener())
+    return AllVerifiable(listener=SilentListener())
 
 @verifiable
 def verifiable_annotation_should_add_fn_to_all_verifiable_and_return_it():

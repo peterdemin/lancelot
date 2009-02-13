@@ -1,8 +1,8 @@
-import lancelot 
-
 '''
 Sub-package with Specs for the behaviours of classes in the library 
 '''
+
+import lancelot 
 
 def dont_raise_index_error():
     ''' Simple fn that does nothing. 
@@ -25,7 +25,7 @@ def string_abc():
 #TODO: make suite-like functionality easier: not manually adding to list
 
 if __name__ == '__main__':
-    ''' Verify all the specs as a collection '''
+    # Verify all the specs as a collection 
     import specification_spec, constraint_spec, wrap_spec, \
         verification_spec, mock_spec
     lancelot.verify()

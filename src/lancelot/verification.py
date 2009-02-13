@@ -9,31 +9,31 @@ class ConsoleListener:
         self._stderr = stderr
         
     def all_verifiable_starting(self, all_verifiable):
-        self._print('Verifying: ', end='', file=self._stdout)
+        self._print('Verifying: ', end='', to_console=self._stdout)
         
     def verification_started(self, fn):
-        self._print('.', end='', file=self._stdout)
+        self._print('.', end='', to_console=self._stdout)
     
     def specification_met(self, fn):
         pass
     
     def specification_unmet(self, fn, exception):
         msg = 'Specification not met: %s' % exception
-        self._print(msg, file = self._stderr)
+        self._print(msg, to_console=self._stderr)
         #TODO: strip out some of the traceback
         traceback.print_tb(exception.__traceback__, file=self._stderr)
 
     def all_verifiable_ending(self, all_verifiable, outcome):
-        self._print('\n%s' % outcome, file=self._stdout)
+        self._print('\n%s' % outcome, to_console=self._stdout)
         
-    def _print(self, msg, end='\n', file=None):
-        file = file and file or self._stdout
-        print(msg, end=end, file=file)
+    def _print(self, msg, end='\n', to_console=None):
+        console = to_console and to_console or self._stdout
+        print(msg, end=end, file=console)
 
 class AllVerifiable:
-    def __init__(self, progress_listener=ConsoleListener()):
+    def __init__(self, listener=ConsoleListener()):
         self._fn_list = []
-        self._progress_listener = progress_listener
+        self._listener = listener
     
     def include(self, verifiable_fn):
         self._fn_list.append(verifiable_fn)
@@ -44,23 +44,23 @@ class AllVerifiable:
         
     def verify(self):
         verified = 0
-        self._progress_listener.all_verifiable_starting(self)
+        self._listener.all_verifiable_starting(self)
         for verifiable_fn in self._fn_list:
             verified += self._verify_fn(verifiable_fn)
         outcome = {'total': self.total(), 
                    'verified': verified, 
                    'unverified': self.total() - verified}
-        self._progress_listener.all_verifiable_ending(self, outcome)
+        self._listener.all_verifiable_ending(self, outcome)
         return outcome 
     
     def _verify_fn(self, verifiable_fn):
-        self._progress_listener.verification_started(verifiable_fn)
+        self._listener.verification_started(verifiable_fn)
         try:
             verifiable_fn()
-            self._progress_listener.specification_met(verifiable_fn)
+            self._listener.specification_met(verifiable_fn)
             return 1
-        except Exception as e:
-            self._progress_listener.specification_unmet(verifiable_fn, e)
+        except Exception as exception:
+            self._listener.specification_unmet(verifiable_fn, exception)
             return 0
 
 _all_verifiable = AllVerifiable()
