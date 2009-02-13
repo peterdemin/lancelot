@@ -74,3 +74,5 @@ def verify(single_verifiable_fn=None):
         AllVerifiable().include(single_verifiable_fn).verify()
     else:
         _all_verifiable.verify()
+
+# Copyright 2009 by the author(s). All rights reserved #

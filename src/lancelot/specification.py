@@ -5,6 +5,7 @@ class Spec:
     def __init__(self, spec_for, given=None):
         self._call_stack = []
         self._spec_for = spec_for
+        self._constraint = BeAnything()
         if given:
             self._setup_initial_state(given)
             
@@ -76,6 +77,10 @@ class WrapFunction:
             return getattr(self._target, self._name)(*self._args, **self._kwds)
         return self._target(*self._args, **self._kwds)
     
+class BeAnything:
+    def check(self, result):
+        result()
+    
 class Raise:
     def __init__(self, specified):
         if type(specified) is type(type):
@@ -91,7 +96,7 @@ class Raise:
 
     def check(self, result):
         try:
-            actual = result()
+            result()
         except self._specified_type as raised:
             if self._specified_msg:
                 self._check_msg(raised)
@@ -103,7 +108,7 @@ class Raise:
         msg_raised = raised.__str__
         try:
             msg_constraint.check(msg_raised)
-        except UnmetSpecification as unmet:
+        except UnmetSpecification:
             msg = "%s, not '%s'" % (self.describe_constraint(), msg_raised())
             raise UnmetSpecification(msg)
 
@@ -174,3 +179,5 @@ class CollaborateWith:
         return ','.join(descriptions)
     
 #TODO: lessthan, lessthanorequalto, greaterthan, greaterthanorequalto, within
+
+# Copyright 2009 by the author(s). All rights reserved #

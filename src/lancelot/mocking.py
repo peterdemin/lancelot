@@ -11,8 +11,8 @@ class MockCall:
         self._current_time = 0
         
     def __call__(self, *args, **kwds):
-        self._specified_args = self._for_spec._comparable_args(args)
-        self._specified_kwds = self._for_spec._comparable_kwds(kwds)
+        self._specified_args = self._for_spec.comparable_args(args)
+        self._specified_kwds = self._for_spec.comparable_kwds(kwds)
         return self
         
     def will_return(self, *values):
@@ -36,11 +36,11 @@ class MockCall:
 
     def _format_args(self, args, kwds):
         formatted_args = ['%r' % arg for arg in args]
-        formatted_args.extend(['%s=%r' % (kwd,value) 
-                               for kwd,value in kwds.items()])
+        formatted_args.extend(['%s=%r' % (kwd, value) 
+                               for kwd, value in kwds.items()])
         return '(%s)' % ','.join(formatted_args)
     
-    def _result_of(self, name):
+    def result_of(self, name):
         if name == self._name:
             self._remove_from_spec()
             return self._verify
@@ -81,10 +81,13 @@ class ExceptionComparator:
         return True
 
 class MockSpec:
-    def __init__(self, comparators={Exception:ExceptionComparator}):
+    def __init__(self, comparators=None):
         self._is_collaborating = False
         self._collaborations = []
-        self._comparators = comparators
+        if comparators:
+            self._comparators = comparators
+        else:
+            self._comparators = {Exception:ExceptionComparator}
     
     def verify(self):
         if len(self._collaborations) > 0:
@@ -101,20 +104,20 @@ class MockSpec:
         if len(self._collaborations) == 0:
             msg = 'should not be collaborating with %s()' % name
             raise UnmetSpecification(msg)
-        return self._collaborations[0]._result_of(name)
+        return self._collaborations[0].result_of(name)
     
     def _comparable(self, value):
-        for type,comparator in self._comparators.items():
-            if isinstance(value, type):
+        for cls, comparator in self._comparators.items():
+            if isinstance(value, cls):
                 return comparator(value)
         return value
     
-    def _comparable_args(self, args):
+    def comparable_args(self, args):
         return tuple([self._comparable(arg) for arg in args])
 
-    def _comparable_kwds(self, kwds):
+    def comparable_kwds(self, kwds):
         comparable_kwds = {}
-        for kwd,value in kwds.items():
+        for kwd, value in kwds.items():
             comparable_kwds[kwd] = self._comparable(value)
         return comparable_kwds
         
@@ -123,4 +126,5 @@ class MockSpec:
         
     def _remove_mock(self, mock):
         self._collaborations.remove(mock)
-        
+    
+# Copyright 2009 by the author(s). All rights reserved #
