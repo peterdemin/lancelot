@@ -18,7 +18,8 @@ class ConsoleListener:
         pass
     
     def specification_unmet(self, fn, exception):
-        self._print('Specification not met: %s' % exception, file = self._stderr)
+        msg = 'Specification not met: %s' % exception
+        self._print(msg, file = self._stderr)
         #TODO: strip out some of the traceback
         traceback.print_tb(exception.__traceback__, file=self._stderr)
 
@@ -27,8 +28,7 @@ class ConsoleListener:
         
     def _print(self, msg, end='\n', file=None):
         file = file and file or self._stdout
-        file.write(msg)
-        file.write(end)
+        print(msg, end=end, file=file)
 
 class AllVerifiable:
     def __init__(self, progress_listener=ConsoleListener()):
