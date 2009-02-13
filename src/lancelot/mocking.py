@@ -19,7 +19,13 @@ class MockCall:
         self._specified_result = values
         return self
     
-    def successive_times(self, num_times):
+    def once(self):
+        return self.times(1)
+    
+    def twice(self):
+        return self.times(2)
+    
+    def times(self, num_times):
         self._successive_times = num_times
         return self
     

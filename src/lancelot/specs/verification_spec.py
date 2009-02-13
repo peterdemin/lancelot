@@ -2,12 +2,12 @@
 
 from lancelot import MockSpec, Spec, verifiable, verify
 from lancelot.specs import dont_raise_index_error, number_one, raise_index_error, string_abc
-from lancelot.verification import AllVerifiable, ConsoleListener, UnmetSpecification
+from lancelot.verification import AllVerifiable, ConsoleListener
 
 class SilentListener(ConsoleListener):
     def __init__(self):
         super().__init__(self, self)
-    def write(self, str):
+    def write(self, msg):
         pass
     
 def all_verifiable_with_silent_listener():
@@ -43,15 +43,15 @@ def all_verifiable_include_should_return_self():
 
 @verifiable
 def all_verifiable_verify_fn_should_execute_the_fn():
-    list = []
-    lambda_list_append = lambda: list.append(len(list))  
+    a_list = []
+    lambda_list_append = lambda: a_list.append(len(a_list))  
     
     spec = Spec(AllVerifiable, given=all_verifiable_with_silent_listener)
     spec.when(spec._verify_fn(verifiable_fn=string_abc))
-    spec.then(list.__len__).should_be(0)
+    spec.then(a_list.__len__).should_be(0)
     
     spec.when(spec._verify_fn(verifiable_fn=lambda_list_append))
-    spec.then(list.__len__).should_be(1)
+    spec.then(a_list.__len__).should_be(1)
 
 @verifiable
 def all_verifiable_verify_fn_should_handle_exceptions_gracefully():
@@ -66,15 +66,15 @@ def all_verifiable_verify_fn_should_return_1_for_success_0_for_failure():
     
 @verifiable
 def all_verifiable_verify_should_verify_each_included_item():
-    list = []
-    lambda_list_append1 = lambda: list.append(0)
-    lambda_list_append2 = lambda: list.extend((1,2)) 
+    a_list = []
+    lambda_list_append1 = lambda: a_list.append(0)
+    lambda_list_append2 = lambda: a_list.extend((1, 2)) 
     
     spec = Spec(AllVerifiable, given=all_verifiable_with_silent_listener)
     spec.when(spec.include(lambda_list_append1), 
               spec.include(lambda_list_append2), 
               spec.verify())
-    spec.then(list.__len__).should_be(3)
+    spec.then(a_list.__len__).should_be(3)
 
 @verifiable
 def all_verifiable_verify_should_return_number_of_verifications():

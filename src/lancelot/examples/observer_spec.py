@@ -57,7 +57,7 @@ def observable_should_notify_observer():
     spec = lancelot.Spec(observable)
     spec.when(spec.add_observer(observer), spec.add_observer(observer))
     spec.then(spec.send_notification())
-    spec.should_collaborate_with(observer.notify(observable).successive_times(2))
+    spec.should_collaborate_with(observer.notify(observable).twice())
     
 if __name__ == '__main__':
     # Verify all the specs as a collection 

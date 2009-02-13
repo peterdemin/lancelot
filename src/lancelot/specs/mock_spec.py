@@ -38,10 +38,10 @@ def result_of_a_mock_call_should_be_callable_and_return_the_specified_value():
     spec = Spec(mock_call_result)
     spec.__call__().should_be(1)
     
-    mock_call = MockSpec().foo().will_return((2,3))
+    mock_call = MockSpec().foo().will_return((2, 3))
     mock_call_result = mock_call.result_of('foo')
     spec = Spec(mock_call_result)
-    spec.__call__().should_be((2,3))
+    spec.__call__().should_be((2, 3))
 
 @verifiable
 def result_of_a_mock_call_should_verify_the_args_specification():
@@ -98,11 +98,13 @@ def result_of_a_mock_call_should_verify_the_args_specification():
 @verifiable
 def mock_call_successive_times_should_return_the_mock_call():
     mock_call = MockSpec().foo()
-    Spec(mock_call).successive_times(2).should_be(mock_call)
+    Spec(mock_call).once().should_be(mock_call)
+    Spec(mock_call).twice().should_be(mock_call)
+    Spec(mock_call).times(3).should_be(mock_call)
 
 @verifiable
 def result_of_a_mock_call_successive_times_should_iterate_over_specified_value():
-    mock_call = MockSpec().foo().successive_times(2).will_return(3,4)
+    mock_call = MockSpec().foo().times(2).will_return(3, 4)
     spec = Spec(mock_call.result_of('foo'))
     spec.__call__().should_be(3)
     spec = Spec(mock_call.result_of('foo'))
@@ -110,7 +112,7 @@ def result_of_a_mock_call_successive_times_should_iterate_over_specified_value()
     spec = Spec(mock_call.result_of('foo'))
     spec.__call__().should_raise(UnmetSpecification('should be collaborating with foo() only 2 successive times'))
     
-    mock_call = MockSpec().bar().successive_times(3).will_return(5)
+    mock_call = MockSpec().bar().times(3).will_return(5)
     spec = Spec(mock_call.result_of('bar'))
     spec.__call__().should_be(5)
     spec = Spec(mock_call.result_of('bar'))
@@ -130,7 +132,7 @@ def result_of_collaboration_specification_should_be_a_mock_call():
 @verifiable
 def after_mock_call_starts_collaborating_then_so_should_its_mock_spec():
     mock_spec = MockSpec()
-    mock_call = mock_spec.foo()
+    mock_call = mock_spec.foo().once()
     Spec(mock_call).start_collaborating().should_be(mock_spec)
     Spec(mock_spec).bar().should_raise(UnmetSpecification)
     Spec(mock_spec).foo().should_not_raise(UnmetSpecification)
@@ -153,7 +155,7 @@ def after_start_collaborating_specified_collaborations_should_be_verified():
     spec.then(spec.baz()).should_raise(UnmetSpecification('should be collaborating with bar(), not baz()'))
     
     mock = MockSpec()
-    mock.foo().successive_times(2).will_return('camelot')
+    mock.foo().times(2).will_return('camelot')
     spec = Spec(mock)
     spec.when(spec._start_collaborating())
     spec.then(spec.foo()).should_not_raise(UnmetSpecification)
@@ -188,7 +190,7 @@ def exception_comparator_should_be_used_by_comparable_for_exceptions():
     spec._comparable(IndexError('the number of the counting'))
     spec.should(BeType(ExceptionComparator))
 
-    spec._comparable(1).should_be(1)
+    spec._comparable(3).should_be(3)
     
 @verifiable
 def exception_comparator_should_be_used_when_verifying_arg_specification():
@@ -203,7 +205,7 @@ def exception_comparator_should_be_used_when_verifying_arg_specification():
     spec.__call__(smelt_of=TypeError('elderberries')).should_not_raise(UnmetSpecification)
 
 class NeverEqualToAnythingComparator:
-    def __init__(self, object):
+    def __init__(self, obj):
         pass
     def __eq__(self, other):
         return False
