@@ -1,4 +1,6 @@
-from lancelot import *
+''' Specs for core library classes / behaviours ''' 
+
+from lancelot import MockSpec, Spec, verifiable, verify
 from lancelot.mocking import ExceptionComparator, MockCall
 from lancelot.specification import BeType
 from lancelot.verification import UnmetSpecification

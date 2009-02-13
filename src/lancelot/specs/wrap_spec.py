@@ -1,4 +1,6 @@
-from lancelot import *
+''' Specs for core library classes / behaviours ''' 
+
+from lancelot import Spec, verifiable, verify
 from lancelot.specification import WrapFunction
 from lancelot.specs import number_one
 

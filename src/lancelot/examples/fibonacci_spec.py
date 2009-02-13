@@ -1,3 +1,7 @@
+'''
+Some example Specs to illustrate usage with a standalone function
+'''
+
 import lancelot
 
 def fib(ordinal=0):

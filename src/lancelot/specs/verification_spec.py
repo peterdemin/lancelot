@@ -1,4 +1,6 @@
-from lancelot import *
+''' Specs for core library classes / behaviours ''' 
+
+from lancelot import MockSpec, Spec, verifiable, verify
 from lancelot.specs import dont_raise_index_error, number_one, raise_index_error, string_abc
 from lancelot.verification import AllVerifiable, ConsoleListener, UnmetSpecification
 

@@ -1,3 +1,7 @@
+'''
+Some example Specs to illustrate usage scenarios with collaborations
+'''
+
 import lancelot 
 
 class Observer:

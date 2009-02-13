@@ -1,4 +1,6 @@
-from lancelot import *
+''' Specs for core library classes / behaviours ''' 
+
+from lancelot import Spec, verifiable, verify
 from lancelot.specification import BeType, Not, WrapFunction
 from lancelot.specs import dont_raise_index_error, number_one, raise_index_error, string_abc
 from lancelot.verification import UnmetSpecification
@@ -14,6 +16,7 @@ def unmet_should_raise_constraint_raises_exception():
         spec1.dont_raise_index_error().should_raise(IndexError)
         assert False
     except UnmetSpecification:
+        # As specified, an exception is raised!
         pass
     
     spec2 = Spec(raise_index_error)
@@ -21,6 +24,7 @@ def unmet_should_raise_constraint_raises_exception():
         spec2.raise_index_error().should_not_raise(IndexError)
         assert False
     except UnmetSpecification:
+        # As specified, an exception is raised!
         pass
     
 @verifiable

@@ -1,3 +1,7 @@
+'''
+Some example Specs to illustrate usage scenarios with given/when/then semantics
+'''
+
 import lancelot
 
 class Stack:
