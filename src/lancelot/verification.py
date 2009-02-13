@@ -9,22 +9,26 @@ class ConsoleListener:
         self._stderr = stderr
         
     def all_verifiable_starting(self, all_verifiable):
-        print('Verifying: ', end='', file=self._stdout)
+        self._print('Verifying: ', end='', file=self._stdout)
         
     def verification_started(self, fn):
-        print('.', end='', file=self._stdout)
+        self._print('.', end='', file=self._stdout)
     
     def specification_met(self, fn):
         pass
     
     def specification_unmet(self, fn, exception):
-        print('Specification not met: %s' % exception, file = self._stderr)
+        self._print('Specification not met: %s' % exception, file = self._stderr)
         #TODO: strip out some of the traceback
         traceback.print_tb(exception.__traceback__, file=self._stderr)
 
     def all_verifiable_ending(self, all_verifiable, outcome):
-        print('', file=self._stdout)
-        print(outcome, file=self._stdout)
+        self._print('\n%s' % outcome, file=self._stdout)
+        
+    def _print(self, msg, end='\n', file=None):
+        file = file and file or self._stdout
+        file.write(msg)
+        file.write(end)
 
 class AllVerifiable:
     def __init__(self, progress_listener=ConsoleListener()):
