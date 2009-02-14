@@ -4,9 +4,10 @@ to determine if they are "equivalent", with more room for semantic
 interpretation than provided by builtins "==" and "is".
 
 Intended public interface:
- Classes: ExceptionComparator, EqualsEqualsComparator, IsSameComparator,
+ Classes: EqualsEqualsComparator, ExceptionComparator, IsSameComparator,
      LessThanComparator, GreaterThanComparator, ContainsComparator,
-     StrComparator, ReprComparator, NotComparator, OrComparator
+     StrComparator, ReprComparator, NotComparator, OrComparator,
+     IsNoneComparator, IsAnythingComparator
  Functions: -
  Variables: -
 
@@ -24,7 +25,7 @@ class Comparator:
         self._prototype = prototype
         
     def __eq__(self, other):
-        ''' Delegate to compare_to method '''
+        ''' Delegate to compares_to method '''
         return self.compares_to(other)
 
     def compares_to(self, other):
@@ -119,7 +120,7 @@ class NotComparator(Comparator):
         self._comparator_to_negate = comparator_to_negate(prototype)
         
     def compares_to(self, other):
-        ''' True iff other comparator_to_negate does not compare_to(other) '''
+        ''' True iff other comparator_to_negate not compares_to(other) '''
         return not self._comparator_to_negate.compares_to(other)
         
 class OrComparator(Comparator):
@@ -132,8 +133,16 @@ class OrComparator(Comparator):
         self._second_comparison = or_comparator(prototype)
     
     def compares_to(self, other):
-        ''' True iff compare_to(other) is True for either_comparator /
+        ''' True iff compares_to(other) is True for either_comparator /
          or_comparator '''
         if self._first_comparison.compares_to(other):
             return True
         return self._second_comparison.compares_to(other)
+
+class IsAnythingComparator(Comparator):
+    ''' Comparator for handling "comparison" to anything. '''
+        
+    def compares_to(self, other):
+        ''' True always (ignoring other and prototypical instance) '''
+        return True
+           

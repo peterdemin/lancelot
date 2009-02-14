@@ -2,15 +2,14 @@
 
 from lancelot import Spec, verifiable, verify
 from lancelot.comparators import Comparator, EqualsEqualsComparator, \
-                                 ExceptionComparator, IsSameComparator, \
-                                 LessThanComparator, GreaterThanComparator, \
-                                 ContainsComparator, IsNoneComparator, \
-                                 StrComparator, ReprComparator, \
-                                 NotComparator, OrComparator 
+     ExceptionComparator, IsSameComparator, LessThanComparator, \
+     GreaterThanComparator, ContainsComparator, IsNoneComparator, \
+     StrComparator, ReprComparator, NotComparator, OrComparator, \
+     IsAnythingComparator
 
 @verifiable
 def base_comparator_behaviour():
-    ''' base Comparator should always find compared objects unequivalent.
+    ''' base Comparator should find all compared objects unequivalent.
      Base class should also delegate __eq__ to compare_to. '''
     Spec(Comparator(1)).compares_to(1).should_be(False)
     Spec(Comparator(2)).compares_to(2).should_be(False)
@@ -161,6 +160,14 @@ def or_comparator_behaviour():
     spec.compares_to(1).should_be(True)
     spec.compares_to(2).should_be(False)
     spec.compares_to('a').should_be(False)
+    
+@verifiable
+def isanything_comparator_behaviour():
+    ''' IsAnythingComparator should find all compared objects equivalent. '''
+    Spec(IsAnythingComparator(1)).compares_to(1).should_be(True)
+    Spec(IsAnythingComparator(1)).compares_to('1').should_be(True)
+    Spec(IsAnythingComparator(1)).compares_to([1]).should_be(True)
+    Spec(IsAnythingComparator(2)).compares_to('xyz').should_be(True)
 
 if __name__ == '__main__':
     verify()
