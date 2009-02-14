@@ -31,8 +31,9 @@ def new_stack():
     return Stack()
 
 @lancelot.verifiable
-def specify_cant_peek_or_pop_from_new_stack():
-    '''' Illustrate Spec(<type>, given=<initial state>) '''
+def behaviour_of_new_stack():
+    '''' Illustrate Spec(<type>, given=<initial state>) 
+    (Behaviour: given a new stack it can't peek or pop) '''
     lancelot.Spec(Stack, given=new_stack).pop().should_raise(IndexError)
     
     lancelot.Spec(Stack, given=new_stack).peek().should_raise(IndexError)
@@ -46,8 +47,9 @@ def specify_cant_peek_or_pop_from_new_stack():
     spec.then(spec.pop()).should_raise(IndexError)
 
 @lancelot.verifiable
-def specify_can_pop_and_peek_pushed_values_from_stack():
-    ''' Illustrate Spec when(...), then(...) sequence '''
+def behaviour_of_stack_with_values():
+    ''' Illustrate Spec when(...), then(...) sequence 
+    (Behaviour: when stack is non-empty then able to peek or pop values) '''
     spec = lancelot.Spec(Stack, given=new_stack)
     spec.when(spec.push(value='a'))
     spec.then(spec.peek()).should_be('a')

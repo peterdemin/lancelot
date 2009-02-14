@@ -6,5 +6,5 @@ import lancelot
 
 if __name__ == '__main__':
     # Verify all the specs as a collection 
-    import fibonacci_spec, stack_spec, observer_spec
+    from lancelot.examples import fibonacci_spec, stack_spec, observer_spec
     lancelot.verify()

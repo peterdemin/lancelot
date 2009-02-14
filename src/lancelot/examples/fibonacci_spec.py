@@ -28,7 +28,7 @@ def specify_fib_zero_to_five():
     spec.fib(5).should_not_be(5)
         
 @lancelot.verifiable
-def specify_fib_zero_to_five_with_named_ordinal():
+def specify_fib_with_named_ordinal():
     ''' Spec(standalone-fn).standalone-fn(kwds).should_be(value) '''
     spec = lancelot.Spec(fib)
     spec.fib(ordinal=0).should_be(1)

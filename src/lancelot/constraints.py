@@ -13,7 +13,6 @@ Copyright 2009 by the author(s). All rights reserved
 '''
 
 from lancelot.verification import UnmetSpecification
-import logging
 
 class Constraint:
     ''' Base constraint class '''
@@ -36,6 +35,7 @@ class Raise(Constraint):
     def __init__(self, specified):
         ''' Specify the exception that should raised.
         May be an exception type or instance '''
+        super().__init__()
         if type(specified) is type(type):
             self._specified_type = specified
             self._specified_msg = None
@@ -75,6 +75,7 @@ class BeEqualTo(Constraint):
     ''' Constraint specifying should... "be == to..." behaviour '''
     
     def __init__(self, specified):
+        super().__init__()
         ''' Specify the value that should be == '''
         self._specified = specified
         
@@ -94,6 +95,7 @@ class BeType(Constraint):
     
     def __init__(self, specified):
         ''' Specify what type of thing it should be '''
+        super().__init__()
         self._specified = specified
         
     def check(self, result):
@@ -113,6 +115,7 @@ class Not(Constraint):
     
     def __init__(self, constraint):
         ''' Specify what other constraint it should not be '''
+        super().__init__()
         self._constraint = constraint
         
     def check(self, result):
@@ -137,6 +140,7 @@ class CollaborateWith(Constraint):
     
     def __init__(self, *collaborations):
         ''' Specify what MockSpec collaborations should occur '''
+        super().__init__()
         self._collaborations = collaborations
     
     def check(self, result):
@@ -155,4 +159,3 @@ class CollaborateWith(Constraint):
         return ','.join(descriptions)
     
 #TODO: lessthan, lessthanorequalto, greaterthan, greaterthanorequalto, within
-
