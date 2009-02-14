@@ -1,8 +1,10 @@
 ''' Specs for core library classes / behaviours ''' 
 
 from lancelot import Spec, verifiable, verify
-from lancelot.specification import BeType, Not, WrapFunction
-from lancelot.specs import dont_raise_index_error, number_one, raise_index_error, string_abc
+from lancelot.calling import WrapFunction
+from lancelot.constraints import BeType, Not
+from lancelot.specs import dont_raise_index_error, number_one, \
+                           raise_index_error, string_abc
 from lancelot.verification import UnmetSpecification
 
 @verifiable

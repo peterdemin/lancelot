@@ -28,13 +28,11 @@ Example usage scenarios are supplied with this package, e.g.
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
+
 __version__ = "1.0rc1"
 
-from lancelot.mocking import MockSpec
-from lancelot.specification import Spec
+from lancelot.specification import MockSpec, Spec
 from lancelot.verification import verifiable, verify
 
 __all__ = ['MockSpec', 'Spec', 'verifiable', 'verify']
-
-#TODO: dependencies? sort out module/import structure!
 

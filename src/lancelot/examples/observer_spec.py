@@ -29,17 +29,7 @@ class Observable:
         
 @lancelot.verifiable
 def observable_should_notify_observer():
-    ''' 
-    Illustrates how Spec.should_collaborate_with() and MockSpec interact, e.g.
-    
-    observer = lancelot.MockSpec()
-    observable = Observable()
-    spec = lancelot.Spec(observable)
-    spec.when(spec.add_observer(observer))
-    spec.then(spec.send_notification())
-    spec.should_collaborate_with(observer.notify(observable))
-    
-    '''
+    ''' Illustrate how Spec.should_collaborate_with() and MockSpec interact '''
     observer = lancelot.MockSpec()
     observable = Observable()
     spec = lancelot.Spec(observable)

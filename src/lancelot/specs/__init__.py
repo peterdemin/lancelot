@@ -26,7 +26,7 @@ def string_abc():
 
 if __name__ == '__main__':
     # Verify all the specs as a collection 
-    import specification_spec, constraint_spec, wrap_spec, \
-        verification_spec, mock_spec
+    import verification_spec, comparator_spec, constraint_spec, \
+        calling_spec, mocking_spec, specification_spec
     lancelot.verify()
     

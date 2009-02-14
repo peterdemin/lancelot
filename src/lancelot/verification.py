@@ -3,11 +3,11 @@ Functionality for collating together verifiable functions and verifying them.
 
 Intended public interface:
  Classes: UnmetSpecification, ConsoleListener, AllVerifiable
- Functions: verifiable (used as "@verifiable" in client code), verify
+ Functions: verifiable [used as "@verifiable" in client code], verify()
  Variables: -
 
 Private interface:
- Variables: all_verifiable (the default collation of verifiable functions)
+ Variables: All_Verifiable (the default collation of verifiable functions)
 
 Copyright 2009 by the author(s). All rights reserved 
 '''

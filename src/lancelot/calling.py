@@ -1,18 +1,48 @@
 '''
-Functionality for specifying object collaborations through "mocks"  
+Functionality for wrapping / deferring / mocking __call__() invocations 
 
 Intended public interface:
- Classes: MockSpec, ExceptionComparator
+ Classes: WrapFunction, MockCall
  Functions: -
  Variables: -
 
 Private interface:
- Classes: MockCall
+ -
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
 
 from lancelot.verification import UnmetSpecification
+import logging
+
+class WrapFunction:
+    ''' Wraps a callable that is invoked when the specification is verified '''
+    
+    def __init__(self, within_spec, target, name):
+        ''' Instance used within_spec, wrapping a named target invocation '''
+        self._within_spec = within_spec
+        self._target = target
+        if type(target).__name__ == 'function' and target.__name__ == name:
+            self._name = ''
+        else:
+            self._name = name
+        self._args = ()
+        self._kwds = {}
+
+    def __call__(self, *args, **kwds):
+        ''' Capture the args to be used for the later invocation ''' 
+        self._args = args
+        self._kwds = kwds
+        return self._within_spec
+    
+    def result(self):
+        ''' Perform the actual invocation ''' 
+        logging.debug('wrapper executing %s %s %s %s' % \
+                      (self._target, self._name, self._args, self._kwds))
+        if self._name:
+            call = getattr(self._target, self._name)
+            return call(*self._args, **self._kwds)
+        return self._target(*self._args, **self._kwds)
 
 class MockCall:
     ''' Wraps an instance of a collaboration for a Mock Specification '''
@@ -113,91 +143,3 @@ class MockCall:
         except IndexError:
             result = self._specified_result[0]
         return result
-
-#TODO: use in Raise 
-class ExceptionComparator:
-    ''' Comparator for handling == comparison with Exception instances. '''
-    
-    def __init__(self, exception):
-        ''' Provides the prototypical instance to compare others against'''
-        self._exception = exception
-        
-    def __eq__(self, other):
-        ''' True iff type(other) == type(prototypical exception)
-        and str(other) == str(prototypical exception '''
-        if type(other) != type(self._exception):
-            return False
-        if str(other) != str(self._exception):
-            return False
-        return True
-
-class MockSpec:
-    ''' Allows collaborations between objects to be specified e.g.  
-    should_collaborate_with (mock_spec.foo(), mock_spec.bar(1), ...) 
-    Distinguishes between "specification" mode (aka "record" mode)
-    and "collaboration" mode (aka "playback" mode, when the specifications
-    are actually verified)
-    '''
-    
-    def __init__(self, comparators=None):
-        ''' A new mock specification: created for specifying collaborations 
-        comparators are used when verifying that args supplied in a 
-        collaboration are those that were specified - by default an
-        ExceptionComparator is used to verify Exception args '''
-        self._is_collaborating = False
-        self._collaborations = []
-        if comparators:
-            self._comparators = comparators
-        else:
-            self._comparators = {Exception:ExceptionComparator}
-    
-    def verify(self):
-        ''' Verify that all the specified collaborations have occurred '''
-        if len(self._collaborations) > 0:
-            raise UnmetSpecification(self._collaborations[0].description())
-    
-    def __getattr__(self, name):
-        ''' Return a mock call for a single collaboration.
-        In "specification" mode a new instance is created,
-        in "collaboration" mode an existing instance is verified ''' 
-        if self._is_collaborating:
-            return self._collaboration(name)
-        mock = MockCall(self, name)
-        self._collaborations.append(mock)
-        return mock
-        
-    def _collaboration(self, name):
-        ''' Return an instance of a collaboration (in "collaboration" mode) '''
-        if len(self._collaborations) == 0:
-            msg = 'should not be collaborating with %s()' % name
-            raise UnmetSpecification(msg)
-        return self._collaborations[0].result_of(name)
-    
-    def comparable(self, value):
-        ''' Return a comparable value for an arg, 
-        using comparators from __init__ ''' 
-        for cls, comparator in self._comparators.items():
-            if isinstance(value, cls):
-                return comparator(value)
-        return value
-    
-    def comparable_args(self, args):
-        ''' Convert all args (tuple) into comparable values '''
-        return tuple([self.comparable(arg) for arg in args])
-
-    def comparable_kwds(self, kwds):
-        ''' Convert all kwd args (dict) into comparable values '''
-        comparable_kwds = {}
-        for kwd, value in kwds.items():
-            comparable_kwds[kwd] = self.comparable(value)
-        return comparable_kwds
-        
-    #TODO: ugly?
-    def start_collaborating(self):
-        ''' Switch to collaboration mode '''
-        self._is_collaborating = True
-        
-    #TODO: ugly?
-    def collaboration_verified(self, mock_call):
-        ''' A specified collaboration has finished '''
-        self._collaborations.remove(mock_call)

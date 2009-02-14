@@ -1,8 +1,9 @@
 ''' Specs for core library classes / behaviours ''' 
 
 from lancelot import MockSpec, Spec, verifiable, verify
-from lancelot.mocking import ExceptionComparator, MockCall
-from lancelot.specification import BeType
+from lancelot.calling import MockCall
+from lancelot.comparators import ExceptionComparator
+from lancelot.constraints import BeType
 from lancelot.verification import UnmetSpecification
 
 @verifiable
@@ -173,16 +174,6 @@ def after_start_collaborating_unverified_collaborations_should_be_verified():
     spec.when(spec.foo(), spec.start_collaborating(), spec.foo())
     spec.then(spec.verify())
     spec.should_not_raise(UnmetSpecification)
-    
-@verifiable
-def exception_comparator_should_compare_type_and_messsage():
-    exception_comparator = ExceptionComparator(IndexError('with message'))
-    #TODO: nicer way of forcing spec to use underlying not self
-    exception_comparator_equals = exception_comparator.__eq__
-    spec = Spec(exception_comparator_equals)
-    spec.__call__(IndexError('with message')).should_be(True)
-    spec.__call__(IndexError('with different message')).should_be(False)
-    spec.__call__(ValueError('with message')).should_be(False)
     
 @verifiable
 def exception_comparator_should_be_used_by_comparable_for_exceptions():

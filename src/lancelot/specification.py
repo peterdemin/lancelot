@@ -1,19 +1,23 @@
 '''
-Functionality for expressing the specified behaviour of an object or function.
+Functionality for expressing the specified behaviour of an object, function
+or collaboration.
 
 Intended public interface:
- Classes: Spec, BeAnything, Raise, BeEqualTo, BeType, Not, CollaborateWith 
+ Classes: Spec, MockSpec 
  Functions: -
  Variables: -
  
 Private interface:
- Classes: WrapFunction
+ - 
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
 
+from lancelot.calling import MockCall, WrapFunction
+from lancelot.comparators import ExceptionComparator
+from lancelot.constraints import BeAnything, BeEqualTo, \
+                                 CollaborateWith, Not, Raise
 from lancelot.verification import UnmetSpecification
-import logging
 
 class Spec:
     ''' Specify the behaviour of an object instance or standalone function '''
@@ -85,170 +89,75 @@ class Spec:
     def should_collaborate_with(self, *collaborations):
         ''' An action's behaviour should meet the specified collaborations. '''
         return self.should(CollaborateWith(*collaborations))
+
+class MockSpec:
+    ''' Allows collaborations between objects to be specified e.g.  
+    should_collaborate_with (mock_spec.foo(), mock_spec.bar(1), ...) 
+    Distinguishes between "specification" mode (aka "record" mode)
+    and "collaboration" mode (aka "playback" mode, when the specifications
+    are actually verified)
+    '''
     
-class WrapFunction:
-    ''' Wraps a callable that is invoked when the specification is verified '''
-    
-    def __init__(self, within_spec, target, name):
-        ''' Instance used within_spec, wrapping a named target invocation '''
-        self._within_spec = within_spec
-        self._target = target
-        if type(target).__name__ == 'function' and target.__name__ == name:
-            self._name = ''
+    def __init__(self, comparators=None):
+        ''' A new mock specification: created for specifying collaborations 
+        comparators are used when verifying that args supplied in a 
+        collaboration are those that were specified - by default an
+        ExceptionComparator is used to verify Exception args '''
+        self._is_collaborating = False
+        self._collaborations = []
+        if comparators:
+            self._comparators = comparators
         else:
-            self._name = name
-        self._args = ()
-        self._kwds = {}
-
-    def __call__(self, *args, **kwds):
-        ''' Capture the args to be used for the later invocation ''' 
-        self._args = args
-        self._kwds = kwds
-        return self._within_spec
+            self._comparators = {Exception:ExceptionComparator}
     
-    def result(self):
-        ''' Perform the actual invocation ''' 
-        logging.debug('wrapper executing %s %s %s %s' % \
-                      (self._target, self._name, self._args, self._kwds))
-        if self._name:
-            call = getattr(self._target, self._name)
-            return call(*self._args, **self._kwds)
-        return self._target(*self._args, **self._kwds)
+    def verify(self):
+        ''' Verify that all the specified collaborations have occurred '''
+        if len(self._collaborations) > 0:
+            raise UnmetSpecification(self._collaborations[0].description())
     
-class BeAnything:
-    ''' Catch-all should... "be anything" constraint specifier '''
-    
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        result()
+    def __getattr__(self, name):
+        ''' Return a mock call for a single collaboration.
+        In "specification" mode a new instance is created,
+        in "collaboration" mode an existing instance is verified ''' 
+        if self._is_collaborating:
+            return self._collaboration(name)
+        mock = MockCall(self, name)
+        self._collaborations.append(mock)
+        return mock
         
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        return 'should be anything'
-    
-class Raise:
-    ''' Constraint specifying should... "raise exception..." behaviour '''
-    
-    def __init__(self, specified):
-        ''' Specify the exception that should raised.
-        May be an exception type or instance '''
-        if type(specified) is type(type):
-            self._specified_type = specified
-            self._specified_msg = None
-            msg = ''
-        else:
-            self._specified_type = type(specified)
-            self._specified_msg = str(specified)
-            msg = " '%s'" % (specified)
-        name = self._specified_type.__name__
-        self._description = 'should raise %s%s' % (name, msg)  
-
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        try:
-            result()
-        except self._specified_type as raised:
-            if self._specified_msg:
-                self._check_msg(raised)
-            return
-        raise UnmetSpecification(self.describe_constraint())
-
-    def _check_msg(self, raised):
-        ''' Verify the raised exception message '''
-        msg_constraint = BeEqualTo(self._specified_msg)
-        msg_raised = raised.__str__
-        try:
-            msg_constraint.check(msg_raised)
-        except UnmetSpecification:
-            msg = "%s, not '%s'" % (self.describe_constraint(), msg_raised())
+    def _collaboration(self, name):
+        ''' Return an instance of a collaboration (in "collaboration" mode) '''
+        if len(self._collaborations) == 0:
+            msg = 'should not be collaborating with %s()' % name
             raise UnmetSpecification(msg)
+        return self._collaborations[0].result_of(name)
+    
+    def comparable(self, value):
+        ''' Return a comparable value for an arg, 
+        using comparators from __init__ ''' 
+        for cls, comparator in self._comparators.items():
+            if isinstance(value, cls):
+                return comparator(value)
+        return value
+    
+    def comparable_args(self, args):
+        ''' Convert all args (tuple) into comparable values '''
+        return tuple([self.comparable(arg) for arg in args])
 
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        return self._description
+    def comparable_kwds(self, kwds):
+        ''' Convert all kwd args (dict) into comparable values '''
+        comparable_kwds = {}
+        for kwd, value in kwds.items():
+            comparable_kwds[kwd] = self.comparable(value)
+        return comparable_kwds
         
-class BeEqualTo:
-    ''' Constraint specifying should... "be == to..." behaviour '''
-    
-    def __init__(self, specified):
-        ''' Specify the value that should be == '''
-        self._specified = specified
+    #TODO: ugly?
+    def start_collaborating(self):
+        ''' Switch to collaboration mode '''
+        self._is_collaborating = True
         
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        actual = result()
-        if actual != self._specified:
-            msg = '%s, not %r' % (self.describe_constraint(), actual)
-            raise UnmetSpecification(msg)
-        
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        return 'should be equal to %r' % self._specified
+    #TODO: ugly?
+    def collaboration_verified(self, mock_call):
+        ''' A specified collaboration has finished '''
+        self._collaborations.remove(mock_call)
     
-class BeType:
-    ''' Constraint specifying should... "be type of..." behaviour '''
-    
-    def __init__(self, specified):
-        ''' Specify what type of thing it should be '''
-        self._specified = specified
-        
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        actual = result()
-        if type(actual) == self._specified:
-            return
-        msg = '%s, not %s' % (self.describe_constraint(), type(actual))
-        raise UnmetSpecification(msg)
-        
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        return 'should be type %s' % self._specified
-        
-class Not:
-    ''' Constraint specifying should... "not..." behaviour '''
-    
-    def __init__(self, constraint):
-        ''' Specify what other constraint it should not be '''
-        self._constraint = constraint
-        
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        try:
-            self._constraint.check(result)
-        except UnmetSpecification:
-            return
-        raise UnmetSpecification(self.describe_constraint())
-    
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        msg = self._constraint.describe_constraint()
-        if msg.startswith('should not '):
-            return msg.replace('should not ', 'should ', 1)
-        elif msg.startswith('should '):
-            return msg.replace('should ', 'should not ', 1)
-        return 'Not: ' + msg 
-    
-class CollaborateWith:
-    ''' Constraint specifying should... "collaborate with" behaviour '''
-    
-    def __init__(self, *collaborations):
-        ''' Specify what MockSpec collaborations should occur '''
-        self._collaborations = collaborations
-    
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        mock_specs = []
-        for collaboration in self._collaborations:
-            mock_specs.append(collaboration.start_collaborating())
-        result()
-        for mock_spec in mock_specs:
-            mock_spec.verify()
-    
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        descriptions = [collaboration.description() 
-                        for collaboration in self._collaborations]
-        return ','.join(descriptions)
-    
-#TODO: lessthan, lessthanorequalto, greaterthan, greaterthanorequalto, within
-
