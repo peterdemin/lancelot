@@ -6,7 +6,7 @@ interpretation than provided by builtins "==" and "is".
 Intended public interface:
  Classes: ExceptionComparator, EqualsEqualsComparator, IsSameComparator,
      LessThanComparator, GreaterThanComparator, ContainsComparator,
-     OrComparator
+     StrComparator, ReprComparator, NotComparator, OrComparator
  Functions: -
  Variables: -
 
@@ -66,7 +66,7 @@ class LessThanComparator(Comparator):
         ''' True iff prototypical instance < other '''
         try :
             return self._prototype < other
-        except:
+        except TypeError:
             return False
 
 class GreaterThanComparator(Comparator):
@@ -76,7 +76,7 @@ class GreaterThanComparator(Comparator):
         ''' True iff prototypical instance > other '''
         try :
             return self._prototype > other
-        except:
+        except TypeError:
             return False
 
 class ContainsComparator(Comparator):
@@ -86,20 +86,54 @@ class ContainsComparator(Comparator):
         ''' True iff other contains prototypical instance '''
         try:
             return self._prototype in other
-        except:
+        except (AttributeError, TypeError):
             return False
+        
+class IsNoneComparator(Comparator):
+    ''' Comparator for handling comparison to None. '''
+        
+    def compares_to(self, other):
+        ''' True iff other other is None (ignoring prototypical instance) '''
+        return None == other
+           
+class StrComparator(Comparator):
+    ''' Comparator for handling comparison through str(). '''
+        
+    def compares_to(self, other):
+        ''' True iff other str(prototypical instance) == str(other) '''
+        return str(self._prototype) == str(other)
 
+class ReprComparator(Comparator):
+    ''' Comparator for handling comparison through repr(). '''
+        
+    def compares_to(self, other):
+        ''' True iff other repr(prototypical instance) == repr(other) '''
+        return repr(self._prototype) == repr(other)
+
+class NotComparator(Comparator):
+    ''' Comparator for handling negative comparisons. '''
+    
+    def __init__(self, prototype, comparator_to_negate):
+        ''' Negate comparator_to_negate for prototype instance '''
+        super().__init__(prototype)
+        self._comparator_to_negate = comparator_to_negate(prototype)
+        
+    def compares_to(self, other):
+        ''' True iff other comparator_to_negate does not compare_to(other) '''
+        return not self._comparator_to_negate.compares_to(other)
+        
 class OrComparator(Comparator):
     ''' Comparator for chaining comparisons using "either-or". '''
     
     def __init__(self, prototype, either_comparator, or_comparator):
+        ''' Chain either_comparator / or_comparator for prototype instance '''
         super().__init__(prototype)
         self._first_comparison = either_comparator(prototype)
         self._second_comparison = or_comparator(prototype)
     
-    
     def compares_to(self, other):
+        ''' True iff compare_to(other) is True for either_comparator /
+         or_comparator '''
         if self._first_comparison.compares_to(other):
             return True
         return self._second_comparison.compares_to(other)
-        

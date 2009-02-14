@@ -4,7 +4,9 @@ from lancelot import Spec, verifiable, verify
 from lancelot.comparators import Comparator, EqualsEqualsComparator, \
                                  ExceptionComparator, IsSameComparator, \
                                  LessThanComparator, GreaterThanComparator, \
-                                 ContainsComparator, OrComparator 
+                                 ContainsComparator, IsNoneComparator, \
+                                 StrComparator, ReprComparator, \
+                                 NotComparator, OrComparator 
 
 @verifiable
 def base_comparator_behaviour():
@@ -94,6 +96,58 @@ def contains_comparator_behaviour():
     spec.compares_to('12').should_be(False)
     spec.compares_to({1:'a'}).should_be(True)
     spec.compares_to({'b':1}).should_be(False)
+
+@verifiable
+def isnonecomparator_behaviour():
+    ''' IsNoneComparator should compare objects with None '''
+    spec = Spec(IsNoneComparator(1))
+    spec.compares_to(None).should_be(True)
+    spec.compares_to(1).should_be(False)
+    spec.compares_to(2).should_be(False)
+    
+    spec = Spec(IsNoneComparator([]))
+    spec.compares_to(None).should_be(True)
+    spec.compares_to([]).should_be(False)
+    spec.compares_to(1).should_be(False)
+
+@verifiable
+def strcomparator_behaviour():
+    ''' StrComparator should compare objects with str() '''
+    spec = Spec(StrComparator(1))
+    spec.compares_to(1).should_be(True)
+    spec.compares_to('1').should_be(True)
+    spec.compares_to([1]).should_be(False)
+    
+    spec = Spec(StrComparator('1'))
+    spec.compares_to(1).should_be(True)
+    spec.compares_to('1').should_be(True)
+    spec.compares_to([1]).should_be(False)
+    
+@verifiable
+def reprcomparator_behaviour():
+    ''' ReprComparator should compare objects with str() '''
+    spec = Spec(ReprComparator(1))
+    spec.compares_to(1).should_be(True)
+    spec.compares_to('1').should_be(False)
+    spec.compares_to([1]).should_be(False)
+    
+    spec = Spec(ReprComparator('1'))
+    spec.compares_to('1').should_be(True)
+    spec.compares_to(1).should_be(False)
+    spec.compares_to([1]).should_be(False)
+    
+@verifiable
+def notcomparator_behaviour():
+    ''' NotComparator should negate other comparisons '''
+    spec = Spec(NotComparator(1, EqualsEqualsComparator))
+    spec.compares_to(1).should_be(False)
+    spec.compares_to('1').should_be(True)
+    spec.compares_to([1]).should_be(True)
+    
+    spec = Spec(NotComparator('1', EqualsEqualsComparator))
+    spec.compares_to('1').should_be(False)
+    spec.compares_to(1).should_be(True)
+    spec.compares_to([1]).should_be(True)
     
 @verifiable
 def or_comparator_behaviour():
