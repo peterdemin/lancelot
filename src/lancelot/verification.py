@@ -96,9 +96,9 @@ class AllVerifiable:
             self._listener.specification_unmet(verifiable_fn, exception)
             return 0
 
-all_verifiable = AllVerifiable() # Default collection to verify
+All_Verifiable = AllVerifiable() # Default collection to verify
 
-def verifiable(annotated_fn, collator=all_verifiable):
+def verifiable(annotated_fn, collator=All_Verifiable):
     ''' Function decorator: collates functions for later verification '''
     collator.include(annotated_fn)
     return annotated_fn
@@ -108,4 +108,4 @@ def verify(single_verifiable_fn=None):
     if single_verifiable_fn:
         AllVerifiable().include(single_verifiable_fn).verify()
     else:
-        all_verifiable.verify()
+        All_Verifiable.verify()

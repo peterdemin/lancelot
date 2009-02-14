@@ -59,7 +59,7 @@ class MockCall:
     #TODO: ugly?
     def start_collaborating(self):
         ''' Switch from "specification" to "collaboration" mode '''
-        self._mock_spec._start_collaborating()
+        self._mock_spec.start_collaborating()
         return self._mock_spec
     
     def description(self):
@@ -92,7 +92,7 @@ class MockCall:
         to occur, and remove this collaboration from those remaining '''         
         self._current_time += 1
         if self._successive_times == self._current_time:
-            self._mock_spec._remove_mock(self)
+            self._mock_spec.collaboration_verified(self)
     
     def _verify(self, *args, **kwds):
         ''' Check that the collaboration is as specified '''
@@ -173,7 +173,7 @@ class MockSpec:
             raise UnmetSpecification(msg)
         return self._collaborations[0].result_of(name)
     
-    def _comparable(self, value):
+    def comparable(self, value):
         ''' Return a comparable value for an arg, 
         using comparators from __init__ ''' 
         for cls, comparator in self._comparators.items():
@@ -183,21 +183,21 @@ class MockSpec:
     
     def comparable_args(self, args):
         ''' Convert all args (tuple) into comparable values '''
-        return tuple([self._comparable(arg) for arg in args])
+        return tuple([self.comparable(arg) for arg in args])
 
     def comparable_kwds(self, kwds):
         ''' Convert all kwd args (dict) into comparable values '''
         comparable_kwds = {}
         for kwd, value in kwds.items():
-            comparable_kwds[kwd] = self._comparable(value)
+            comparable_kwds[kwd] = self.comparable(value)
         return comparable_kwds
         
     #TODO: ugly?
-    def _start_collaborating(self):
+    def start_collaborating(self):
         ''' Switch to collaboration mode '''
         self._is_collaborating = True
         
     #TODO: ugly?
-    def _remove_mock(self, mock):
+    def collaboration_verified(self, mock_call):
         ''' A specified collaboration has finished '''
-        self._collaborations.remove(mock)
+        self._collaborations.remove(mock_call)

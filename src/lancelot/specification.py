@@ -111,8 +111,8 @@ class WrapFunction:
         logging.debug('wrapper executing %s %s %s %s' % \
                       (self._target, self._name, self._args, self._kwds))
         if self._name:
-            callable = getattr(self._target, self._name)
-            return callable(*self._args, **self._kwds)
+            call = getattr(self._target, self._name)
+            return call(*self._args, **self._kwds)
         return self._target(*self._args, **self._kwds)
     
 class BeAnything:

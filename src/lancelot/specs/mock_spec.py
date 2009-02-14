@@ -140,24 +140,24 @@ def after_mock_call_starts_collaborating_then_so_should_its_mock_spec():
 @verifiable
 def after_start_collaborating_specified_collaborations_should_be_verified():
     spec = Spec(MockSpec())
-    spec.when(spec._start_collaborating())
+    spec.when(spec.start_collaborating())
     spec.then(spec.foo())
     spec.should_raise(UnmetSpecification('should not be collaborating with foo()'))
 
     spec = Spec(MockSpec())
-    spec.when(spec.foo(), spec._start_collaborating())
+    spec.when(spec.foo(), spec.start_collaborating())
     spec.then(spec.bar())
     spec.should_raise(UnmetSpecification('should be collaborating with foo(), not bar()'))
 
     spec = Spec(MockSpec())
-    spec.when(spec.foo(), spec.bar(), spec._start_collaborating())
+    spec.when(spec.foo(), spec.bar(), spec.start_collaborating())
     spec.then(spec.foo()).should_not_raise(UnmetSpecification)
     spec.then(spec.baz()).should_raise(UnmetSpecification('should be collaborating with bar(), not baz()'))
     
     mock = MockSpec()
     mock.foo().times(2).will_return('camelot')
     spec = Spec(mock)
-    spec.when(spec._start_collaborating())
+    spec.when(spec.start_collaborating())
     spec.then(spec.foo()).should_not_raise(UnmetSpecification)
     spec.then(spec.foo()).should_not_raise(UnmetSpecification)
     spec.then(spec.foo()).should_raise(UnmetSpecification('should not be collaborating with foo()'))
@@ -165,12 +165,12 @@ def after_start_collaborating_specified_collaborations_should_be_verified():
 @verifiable
 def after_start_collaborating_unverified_collaborations_should_be_verified():
     spec = Spec(MockSpec())
-    spec.when(spec.foo(), spec._start_collaborating())
+    spec.when(spec.foo(), spec.start_collaborating())
     spec.then(spec.verify())
     spec.should_raise(UnmetSpecification('should be collaborating with foo()'))
     
     spec = Spec(MockSpec())
-    spec.when(spec.foo(), spec._start_collaborating(), spec.foo())
+    spec.when(spec.foo(), spec.start_collaborating(), spec.foo())
     spec.then(spec.verify())
     spec.should_not_raise(UnmetSpecification)
     
@@ -187,10 +187,11 @@ def exception_comparator_should_compare_type_and_messsage():
 @verifiable
 def exception_comparator_should_be_used_by_comparable_for_exceptions():
     spec = Spec(MockSpec())
-    spec._comparable(IndexError('the number of the counting'))
+    
+    spec.comparable(IndexError('the number of the counting'))
     spec.should(BeType(ExceptionComparator))
 
-    spec._comparable(3).should_be(3)
+    spec.comparable(3).should_be(3)
     
 @verifiable
 def exception_comparator_should_be_used_when_verifying_arg_specification():
