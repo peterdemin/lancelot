@@ -12,35 +12,46 @@ Intended for internal use:
 Copyright 2009 by the author(s). All rights reserved 
 '''
 
-from lancelot.comparators import IsNothingComparator, IsAnythingComparator
+from lancelot.comparators import Nothing, Anything, EqualsEquals, \
+                                 ExceptionValue, Type
 from lancelot.verification import UnmetSpecification
 
 class Constraint:
     ''' Base constraint class '''
     
-    def __init__(self, comparator=IsNothingComparator()):
+    def __init__(self, comparator=Nothing()):
         ''' Specify the comparator that is used in verification '''
         self._comparator = comparator
+        self._result = None
     
-    def verify_constraint(self, callable_result):
-        ''' Invoke callable_result() and verify() it meets the constraint '''
-        value = callable_result()
-        return self.verify(value)
+    def verify(self, callable_result):
+        ''' Invoke callable_result() and _verify() it meets the constraint '''
+        value_to_verify = self._invoke(callable_result)
+        if self.verify_value(value_to_verify):
+            return
+        msg = '%s, not %r' % (self.describe_constraint(), value_to_verify)
+        raise UnmetSpecification(msg)
         
-    def verify(self, value, raised_exception=None):
-        ''' Verify that a value meets the constraint '''
-        return self._comparator.compares_to(value)
+    def _invoke(self, callable_result):
+        ''' Invoke the callable and store away the result.
+        Please call from subclasses that need to override verify() itself. '''
+        self._result = callable_result()
+        return self._result
         
+    def verify_value(self, value_to_verify):
+        ''' True if value meets the constraint, False otherwise.'''
+        return self._comparator.compares_to(value_to_verify)
+    
     def describe_constraint(self):
         ''' Describe this constraint '''
-        return 'should not be anything'    
+        return 'should be nothing'    
 
 class BeAnything(Constraint):
     ''' Catch-all should... "be anything" constraint specifier '''
     
     def __init__(self):
         ''' Specify the IsAnything comparator used in verification '''
-        super().__init__(IsAnythingComparator())
+        super().__init__(Anything())
         
     def describe_constraint(self):
         ''' Describe this constraint '''
@@ -53,36 +64,25 @@ class Raise(Constraint):
         ''' Specify the exception that should raised.
         May be an exception type or instance '''
         super().__init__()
-        if type(specified) is type(type):
+        self._specified = specified
+        if isinstance(specified, type):
             self._specified_type = specified
-            self._specified_msg = None
-            msg = ''
+            self._description = 'should raise %s' % (specified.__name__)
         else:
             self._specified_type = type(specified)
-            self._specified_msg = str(specified)
-            msg = " '%s'" % (specified)
-        name = self._specified_type.__name__
-        self._description = 'should raise %s%s' % (name, msg)  
-
-    def check(self, result):
-        ''' Check that the constraint is met '''
+            self._description = 'should raise %r' % (specified)
+        
+    def verify(self, callable_result):
+        ''' Invoke callable_result() and it raises an exception that 
+        meets the constraint '''
         try:
-            result()
-        except self._specified_type as raised:
-            if self._specified_msg:
-                self._check_msg(raised)
-            return
-        raise UnmetSpecification(self.describe_constraint())
-
-    def _check_msg(self, raised):
-        ''' Verify the raised exception message '''
-        msg_constraint = BeEqualTo(self._specified_msg)
-        msg_raised = raised.__str__
-        try:
-            msg_constraint.check(msg_raised)
-        except UnmetSpecification:
-            msg = "%s, not '%s'" % (self.describe_constraint(), msg_raised())
+            self._invoke(callable_result)
+        except self._specified_type as raised_exception:
+            if ExceptionValue(self._specified).compares_to(raised_exception):
+                return
+            msg = '%s, not %r' % (self.describe_constraint(), raised_exception)
             raise UnmetSpecification(msg)
+        raise UnmetSpecification(self.describe_constraint())
 
     def describe_constraint(self):
         ''' Describe this constraint '''
@@ -92,40 +92,25 @@ class BeEqualTo(Constraint):
     ''' Constraint specifying should... "be == to..." behaviour '''
     
     def __init__(self, specified):
-        super().__init__()
         ''' Specify the value that should be == '''
-        self._specified = specified
-        
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        actual = result()
-        if actual != self._specified:
-            msg = '%s, not %r' % (self.describe_constraint(), actual)
-            raise UnmetSpecification(msg)
+        super().__init__(EqualsEquals(specified))
+        self._description = 'should be == %s' % repr(specified)
         
     def describe_constraint(self):
         ''' Describe this constraint '''
-        return 'should be equal to %r' % self._specified
+        return self._description
     
 class BeType(Constraint):
     ''' Constraint specifying should... "be type of..." behaviour '''
     
     def __init__(self, specified):
         ''' Specify what type of thing it should be '''
-        super().__init__()
-        self._specified = specified
-        
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        actual = result()
-        if type(actual) == self._specified:
-            return
-        msg = '%s, not %s' % (self.describe_constraint(), type(actual))
-        raise UnmetSpecification(msg)
+        super().__init__(Type(specified))
+        self._description = 'should be type %s' % (specified)
         
     def describe_constraint(self):
         ''' Describe this constraint '''
-        return 'should be type %s' % self._specified
+        return self._description
         
 class Not(Constraint):
     ''' Constraint specifying should... "not..." behaviour '''
@@ -135,10 +120,10 @@ class Not(Constraint):
         super().__init__()
         self._constraint = constraint
         
-    def check(self, result):
+    def verify(self, callable_result):
         ''' Check that the constraint is met '''
         try:
-            self._constraint.check(result)
+            self._constraint.verify(callable_result)
         except UnmetSpecification:
             return
         raise UnmetSpecification(self.describe_constraint())
@@ -160,12 +145,12 @@ class CollaborateWith(Constraint):
         super().__init__()
         self._collaborations = collaborations
     
-    def check(self, result):
+    def verify(self, callable_result):
         ''' Check that the constraint is met '''
         mock_specs = []
         for collaboration in self._collaborations:
             mock_specs.append(collaboration.start_collaborating())
-        result()
+        self._invoke(callable_result)
         for mock_spec in mock_specs:
             mock_spec.verify()
     

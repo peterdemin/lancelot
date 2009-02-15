@@ -2,7 +2,7 @@
 
 from lancelot import MockSpec, Spec, verifiable, verify
 from lancelot.calling import MockCall
-from lancelot.comparators import ExceptionComparator
+from lancelot.comparators import ExceptionValue
 from lancelot.constraints import BeType
 from lancelot.verification import UnmetSpecification
 
@@ -180,7 +180,7 @@ def exception_comparator_should_be_used_by_comparable_for_exceptions():
     spec = Spec(MockSpec())
     
     spec.comparable(IndexError('the number of the counting'))
-    spec.should(BeType(ExceptionComparator))
+    spec.should(BeType(ExceptionValue))
 
     spec.comparable(3).should_be(3)
     

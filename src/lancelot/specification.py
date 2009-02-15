@@ -14,7 +14,7 @@ Copyright 2009 by the author(s). All rights reserved
 '''
 
 from lancelot.calling import MockCall, WrapFunction
-from lancelot.comparators import ExceptionComparator
+from lancelot.comparators import ExceptionValue
 from lancelot.constraints import BeAnything, BeEqualTo, \
                                  CollaborateWith, Not, Raise
 from lancelot.verification import UnmetSpecification
@@ -66,7 +66,7 @@ class Spec:
     def should(self, constraint):
         ''' Specify the constraint to be met by action's behaviour '''  
         self._constraint = constraint
-        constraint.check(self._call_stack.pop().result)
+        constraint.verify(self._call_stack.pop().result)
         return self
     
     def should_raise(self, specified):
@@ -108,7 +108,7 @@ class MockSpec:
         if comparators:
             self._comparators = comparators
         else:
-            self._comparators = {Exception:ExceptionComparator}
+            self._comparators = {Exception:ExceptionValue}
     
     def verify(self):
         ''' Verify that all the specified collaborations have occurred '''
