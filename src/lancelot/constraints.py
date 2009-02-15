@@ -6,24 +6,41 @@ Intended public interface:
  Functions: -
  Variables: -
  
-Private interface:
+Intended for internal use:
  Classes: Constraint
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
 
+from lancelot.comparators import IsNothingComparator, IsAnythingComparator
 from lancelot.verification import UnmetSpecification
 
 class Constraint:
     ''' Base constraint class '''
-    pass
+    
+    def __init__(self, comparator=IsNothingComparator()):
+        ''' Specify the comparator that is used in verification '''
+        self._comparator = comparator
+    
+    def verify_constraint(self, callable_result):
+        ''' Invoke callable_result() and verify() it meets the constraint '''
+        value = callable_result()
+        return self.verify(value)
+        
+    def verify(self, value, raised_exception=None):
+        ''' Verify that a value meets the constraint '''
+        return self._comparator.compares_to(value)
+        
+    def describe_constraint(self):
+        ''' Describe this constraint '''
+        return 'should not be anything'    
 
 class BeAnything(Constraint):
     ''' Catch-all should... "be anything" constraint specifier '''
     
-    def check(self, result):
-        ''' Check that the constraint is met '''
-        result()
+    def __init__(self):
+        ''' Specify the IsAnything comparator used in verification '''
+        super().__init__(IsAnythingComparator())
         
     def describe_constraint(self):
         ''' Describe this constraint '''

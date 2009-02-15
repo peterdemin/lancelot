@@ -1,10 +1,37 @@
 ''' Specs for core library classes / behaviours ''' 
 
 from lancelot import MockSpec, Spec, verifiable, verify
-from lancelot.constraints import BeEqualTo, BeType, CollaborateWith, Not, Raise
+from lancelot.constraints import Constraint, BeAnything, BeEqualTo, BeType, \
+                                 CollaborateWith, Not, Raise
 from lancelot.specs import dont_raise_index_error, number_one, \
                            raise_index_error, string_abc
 from lancelot.verification import UnmetSpecification
+
+@verifiable
+def base_constraint_behaviour():
+    ''' base Constraint should invoke callable and verify the result.
+    Verification should delegate to a comparator. '''
+    a_list = []
+    with_callable = lambda: a_list.append(True)
+    spec = Spec(Constraint())
+    spec.verify_constraint(with_callable).should_be(False)
+    spec.then(a_list.__len__).should_be(1)
+    
+    spec.verify(1).should_be(False)
+    spec.verify(2).should_be(False)
+    spec.verify(None).should_be(False)
+    spec.verify(['majestic', 'moose']).should_be(False)
+    spec.verify({'gumby': 'brain surgeon'}).should_be(False)
+
+@verifiable
+def beanything_behaviour():
+    ''' BeAnything constraint should always verify successfully '''
+    spec = Spec(BeAnything())
+    spec.verify(1).should_be(True)
+    spec.verify(2).should_be(True)
+    spec.verify(None).should_be(True)
+    spec.verify(['majestic', 'moose']).should_be(True)
+    spec.verify({'gumby': 'brain surgeon'}).should_be(True)
 
 @verifiable
 def raise_should_check_type_of_exception_is_raised():

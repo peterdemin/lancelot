@@ -25,6 +25,12 @@ Example usage scenarios are supplied with this package, e.g.
     spec.when(spec.add_observer(observer))
     spec.then(spec.send_notification())
     spec.should_collaborate_with(observer.notify(observable))
+    
+Additional ways to specify should(...) constraints on method results 
+    are available in the lancelot.constraints sub-package. 
+
+Additional ways to specify argument or return values in collaborations or 
+    constraints are available in the lancelot.comparators sub-package. 
 
 Copyright 2009 by the author(s). All rights reserved 
 '''

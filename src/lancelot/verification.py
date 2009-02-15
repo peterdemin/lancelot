@@ -6,7 +6,7 @@ Intended public interface:
  Functions: verifiable [used as "@verifiable" in client code], verify()
  Variables: -
 
-Private interface:
+Intended for internal use:
  Variables: All_Verifiable (the default collation of verifiable functions)
 
 Copyright 2009 by the author(s). All rights reserved 

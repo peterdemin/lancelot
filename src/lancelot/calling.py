@@ -6,7 +6,7 @@ Intended public interface:
  Functions: -
  Variables: -
 
-Private interface:
+Intended for internal use:
  -
 
 Copyright 2009 by the author(s). All rights reserved 

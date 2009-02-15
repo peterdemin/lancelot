@@ -7,18 +7,18 @@ Intended public interface:
  Classes: EqualsEqualsComparator, ExceptionComparator, IsSameComparator,
      LessThanComparator, GreaterThanComparator, ContainsComparator,
      StrComparator, ReprComparator, NotComparator, OrComparator,
-     IsNoneComparator, IsAnythingComparator
+     IsNoneComparator, IsAnythingComparator, IsNothingComparator
  Functions: -
  Variables: -
 
-Private interface:
- Classes: Comparator
+Intended for internal use:
+ Classes: Comparator, IsComparator
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
 
 class Comparator:
-    ''' Comparator base class. '''
+    ''' Base class for comparing a prototypical instance to an other value. '''
     
     def __init__(self, prototype):
         ''' Provide a prototypical instance to compare others against'''
@@ -89,14 +89,7 @@ class ContainsComparator(Comparator):
             return self._prototype in other
         except (AttributeError, TypeError):
             return False
-        
-class IsNoneComparator(Comparator):
-    ''' Comparator for handling comparison to None. '''
-        
-    def compares_to(self, other):
-        ''' True iff other other is None (ignoring prototypical instance) '''
-        return None == other
-           
+      
 class StrComparator(Comparator):
     ''' Comparator for handling comparison through str(). '''
         
@@ -125,24 +118,44 @@ class NotComparator(Comparator):
         
 class OrComparator(Comparator):
     ''' Comparator for chaining comparisons using "either-or". '''
-    
+
     def __init__(self, prototype, either_comparator, or_comparator):
         ''' Chain either_comparator / or_comparator for prototype instance '''
         super().__init__(prototype)
         self._first_comparison = either_comparator(prototype)
         self._second_comparison = or_comparator(prototype)
-    
+
     def compares_to(self, other):
         ''' True iff compares_to(other) is True for either_comparator /
-         or_comparator '''
+        or_comparator '''
         if self._first_comparison.compares_to(other):
             return True
         return self._second_comparison.compares_to(other)
 
-class IsAnythingComparator(Comparator):
+class IsComparator(Comparator):
+    ''' Comparator for handling "comparisons" without a prototype instance '''
+    
+    def __init__(self):
+        ''' No args constructor since the prototypical instance is ignored '''
+        super().__init__(None)
+
+class IsNoneComparator(IsComparator):
+    ''' Comparator for handling comparison to None. '''
+        
+    def compares_to(self, other):
+        ''' True iff other other is None (ignoring prototypical instance) '''
+        return None == other
+           
+class IsAnythingComparator(IsComparator):
     ''' Comparator for handling "comparison" to anything. '''
         
     def compares_to(self, other):
         ''' True always (ignoring other and prototypical instance) '''
         return True
-           
+
+class IsNothingComparator(IsComparator):
+    ''' Comparator for handling "comparison" to nothing. '''
+        
+    def compares_to(self, other):
+        ''' False always (ignoring other and prototypical instance) '''
+        return False

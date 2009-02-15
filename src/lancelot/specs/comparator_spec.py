@@ -5,7 +5,7 @@ from lancelot.comparators import Comparator, EqualsEqualsComparator, \
      ExceptionComparator, IsSameComparator, LessThanComparator, \
      GreaterThanComparator, ContainsComparator, IsNoneComparator, \
      StrComparator, ReprComparator, NotComparator, OrComparator, \
-     IsAnythingComparator
+     IsAnythingComparator, IsNothingComparator
 
 @verifiable
 def base_comparator_behaviour():
@@ -99,15 +99,12 @@ def contains_comparator_behaviour():
 @verifiable
 def isnonecomparator_behaviour():
     ''' IsNoneComparator should compare objects with None '''
-    spec = Spec(IsNoneComparator(1))
+    spec = Spec(IsNoneComparator())
     spec.compares_to(None).should_be(True)
     spec.compares_to(1).should_be(False)
     spec.compares_to(2).should_be(False)
-    
-    spec = Spec(IsNoneComparator([]))
-    spec.compares_to(None).should_be(True)
     spec.compares_to([]).should_be(False)
-    spec.compares_to(1).should_be(False)
+    spec.compares_to('').should_be(False)
 
 @verifiable
 def strcomparator_behaviour():
@@ -164,10 +161,18 @@ def or_comparator_behaviour():
 @verifiable
 def isanything_comparator_behaviour():
     ''' IsAnythingComparator should find all compared objects equivalent. '''
-    Spec(IsAnythingComparator(1)).compares_to(1).should_be(True)
-    Spec(IsAnythingComparator(1)).compares_to('1').should_be(True)
-    Spec(IsAnythingComparator(1)).compares_to([1]).should_be(True)
-    Spec(IsAnythingComparator(2)).compares_to('xyz').should_be(True)
+    Spec(IsAnythingComparator()).compares_to(1).should_be(True)
+    Spec(IsAnythingComparator()).compares_to('1').should_be(True)
+    Spec(IsAnythingComparator()).compares_to([1]).should_be(True)
+    Spec(IsAnythingComparator()).compares_to('xyz').should_be(True)
+    
+@verifiable
+def isnothing_comparator_behaviour():
+    ''' IsNothingComparator should never find compared objects equivalent. '''
+    Spec(IsNothingComparator()).compares_to(1).should_be(False)
+    Spec(IsNothingComparator()).compares_to('1').should_be(False)
+    Spec(IsNothingComparator()).compares_to([1]).should_be(False)
+    Spec(IsNothingComparator()).compares_to('xyz').should_be(False)
 
 if __name__ == '__main__':
     verify()
