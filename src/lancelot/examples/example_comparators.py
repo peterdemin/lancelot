@@ -4,7 +4,7 @@ Some example Specs to illustrate additional comparator usage
 
 import lancelot
 from lancelot.comparators import Anything, FloatValue, NotNoneValue, \
-    NoneValue, GreaterThan, LessThan, StrEquals, Contain, Empty, Length
+    NoneValue, GreaterThan, LessThan, StrEquals, Empty, Length
 
 @lancelot.verifiable
 def value_based_comparators():

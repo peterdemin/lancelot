@@ -32,15 +32,15 @@ class ConsoleListener:
         ''' A verification run is starting '''
         self._print('Verifying: ', end='', to_console=self._stdout)
         
-    def verification_started(self, fn):
+    def verification_started(self, verifiable_fn):
         ''' A verification of a single function is starting '''
         self._print('.', end='', to_console=self._stdout)
     
-    def specification_met(self, fn):
+    def specification_met(self, verifiable_fn):
         ''' A verification of a function has completed successfully '''
         pass
     
-    def specification_unmet(self, fn, unmet):
+    def specification_unmet(self, verifiable_fn, unmet):
         ''' A verification of a function has completed unsuccessfully '''
         msg = 'Specification not met: %s' % unmet
         self._exception_raised(msg, unmet)
@@ -53,7 +53,7 @@ class ConsoleListener:
         for item in traceback.format_list(tb_items):
             self._print(item, end='', to_console=self._stderr)
     
-    def unexpected_exception(self, fn, exception):
+    def unexpected_exception(self, verifiable_fn, exception):
         ''' An unexpected exception was raised from a function '''
         msg = 'Unexpected exception: %r' % exception
         self._exception_raised(msg, exception)

@@ -180,7 +180,7 @@ class FloatValue(Comparator):
             prototype_parts = str(prototype).split('.')
             try:
                 num_dec_places = len(prototype_parts[1]) + 1
-            except:
+            except IndexError:
                 num_dec_places = 1
             self._tolerance = pow(10, -num_dec_places)
         
