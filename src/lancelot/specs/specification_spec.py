@@ -3,9 +3,9 @@
 from lancelot import Spec, verifiable, verify
 from lancelot.calling import WrapFunction
 from lancelot.constraints import BeType, Not
-from lancelot.specs import dont_raise_index_error, number_one, \
-                           raise_index_error, string_abc
 from lancelot.verification import UnmetSpecification
+from lancelot.specs.simple_fns import dont_raise_index_error, number_one, \
+                                      raise_index_error, string_abc
 
 @verifiable
 def atomic_raise_behaviour():
@@ -78,13 +78,16 @@ def spec_getattr_behaviour():
 
 @verifiable
 def then_behaviour(): 
-    ''' Spec for then()... actions that call fns outside the spec itself '''
+    ''' Spec for then()... actions that call fns outside the spec itself.
+    Note that the action on the spec is called:
+        spec.then( * spec.__len__() * ).should_be(1)
+    but the action outside the spec is NOT:
+        spec.then( * 'they called him brian'.__len__ * ).should_be(21) 
+    '''
     spec = Spec([])
     spec.when(spec.append('brian'))
-    spec.then('they called him brian'.__len__).should_be(21)
-    spec.then(spec.__len__).should_be(1)
-#    TODO:
-#    spec.then('they called him brian'.__len__).should_be(21) 
+    spec.then(spec.__len__()).should_be(1)
+    spec.then('they called him brian'.__len__).should_be(21) 
     
 if __name__ == '__main__':
     verify()

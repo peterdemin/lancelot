@@ -44,8 +44,10 @@ class ConsoleListener:
         ''' A verification of a function has completed unsuccessfully '''
         msg = 'Specification not met: %s' % exception
         self._print(msg, to_console=self._stderr)
-        #TODO: strip out some of the traceback
-        traceback.print_tb(exception.__traceback__, file=self._stderr)
+        tb_items = traceback.extract_tb(exception.__traceback__)
+        tb_items.pop(0) # remove AllVerifiable._verify_fn
+        for item in traceback.format_list(tb_items):
+            self._print(item, end='', to_console=self._stderr)
 
     def all_verifiable_ending(self, all_verifiable, outcome):
         ''' A verification run is ending '''
@@ -96,9 +98,9 @@ class AllVerifiable:
             self._listener.specification_unmet(verifiable_fn, exception)
             return 0
 
-All_Verifiable = AllVerifiable() # Default collection to verify
+ALL_VERIFIABLE = AllVerifiable() # Default collection to verify
 
-def verifiable(annotated_fn, collator=All_Verifiable):
+def verifiable(annotated_fn, collator=ALL_VERIFIABLE):
     ''' Function decorator: collates functions for later verification '''
     collator.include(annotated_fn)
     return annotated_fn
@@ -106,6 +108,6 @@ def verifiable(annotated_fn, collator=All_Verifiable):
 def verify(single_verifiable_fn=None):
     ''' Verify either a single specified function or the default collection '''
     if single_verifiable_fn:
-        AllVerifiable().include(single_verifiable_fn).verify()
+        return AllVerifiable().include(single_verifiable_fn).verify()
     else:
-        All_Verifiable.verify()
+        return ALL_VERIFIABLE.verify()

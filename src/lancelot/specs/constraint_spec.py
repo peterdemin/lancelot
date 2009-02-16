@@ -3,9 +3,9 @@
 from lancelot import MockSpec, Spec, verifiable, verify
 from lancelot.constraints import Constraint, BeAnything, BeEqualTo, BeType, \
                                  CollaborateWith, Not, Raise
-from lancelot.specs import dont_raise_index_error, number_one, \
-                           raise_index_error, string_abc
 from lancelot.verification import UnmetSpecification
+from lancelot.specs.simple_fns import dont_raise_index_error, number_one, \
+                                      raise_index_error, string_abc
 
 @verifiable
 def base_constraint_behaviour():

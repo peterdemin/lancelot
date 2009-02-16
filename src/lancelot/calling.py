@@ -49,7 +49,7 @@ class MockCall:
       
     def __init__(self, mock_spec, name):
         ''' An instance is created by a "mock_spec" for a given method "name" 
-        A default instance will_return(None), and expects invocation once() ''' 
+        A default instance will_return(None), and expects invocation once() '''
         self._mock_spec = mock_spec
         self._name = name
         self._specified_args = ()
@@ -113,33 +113,34 @@ class MockCall:
         and return the current value specified by will_return '''
         if name == self._name:
             self._remove_from_spec()
-            return self._verify #TODO: _current_result
+            return self._current_result
         raise UnmetSpecification('%s, not %s()' % (self.description(), name))
     
     #TODO: ugly?
     def _remove_from_spec(self):
         ''' Check the number of times that this collaboration was specified
-        to occur, and remove this collaboration from those remaining '''         
+        to occur, and remove this collaboration from those remaining '''
         self._current_time += 1
         if self._successive_times == self._current_time:
             self._mock_spec.collaboration_verified(self)
     
     def _verify(self, *args, **kwds):
         ''' Check that the collaboration is as specified '''
-        if self._specified_args == args and self._specified_kwds == kwds:
-            return self._current_result()
-        supplied = self._format_args(args, kwds)
-        msg = '%s, not %s%s' % (self.description(), self._name, supplied)
-        raise UnmetSpecification(msg)
-
-    def _current_result(self):
-        ''' The current will_return value for this collaboration '''
         if self._successive_times < self._current_time:
             msg = '%s only %s successive times' % \
                 (self.description(), self._successive_times)
             raise UnmetSpecification(msg)
+        if self._specified_args == args and self._specified_kwds == kwds:
+            return 
+        supplied = self._format_args(args, kwds)
+        msg = '%s, not %s%s' % (self.description(), self._name, supplied)
+        raise UnmetSpecification(msg)
+
+    def _current_result(self, *args, **kwds):
+        ''' The current will_return value for this collaboration '''
+        self._verify(*args, **kwds)
         try:
-            result = self._specified_result[self._current_time -1]
+            return self._specified_result[self._current_time -1]
         except IndexError:
-            result = self._specified_result[0]
+            return self._specified_result[0]
         return result

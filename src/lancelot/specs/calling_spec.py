@@ -2,7 +2,7 @@
 
 from lancelot import Spec, verifiable, verify
 from lancelot.calling import WrapFunction
-from lancelot.specs import number_one
+from lancelot.specs.simple_fns import number_one
 
 @verifiable
 def calling_wrapper_should_return_owning_spec():
