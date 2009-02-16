@@ -3,8 +3,9 @@
 from lancelot import Spec, verifiable, verify
 from lancelot.comparators import Comparator, EqualsEquals, \
      ExceptionValue, SameAs, LessThan, GreaterThan, Contain, \
-     NoneValue, NotNoneValue, StrEquals, ReprEquals, Anything, Nothing, \
-     NotComparator, OrComparator, NotContain, Length, Empty, Type
+     NoneValue, NotNoneValue, FloatValue, StrEquals, ReprEquals, Anything, \
+     Nothing, NotComparator, OrComparator, NotContain, Length, Empty, Type, \
+     LessThanOrEqual, GreaterThanOrEqual
 
 @verifiable
 def base_comparator_behaviour():
@@ -45,6 +46,38 @@ def exceptionvalue_behaviour():
     spec.compares_to(IndexError('different message')).should_be(True)
     spec.compares_to(ValueError('with message')).should_be(False)
 
+@verifiable
+def floatvalue_behaviour():
+    ''' FloatValue comparator should compare objects with tolerance for FPA '''
+    spec = Spec(FloatValue(1.1))
+    spec.tolerance().should_be(0.01)
+    spec.compares_to(1.1).should_be(True)
+    spec.compares_to(1.11).should_be(True)
+    spec.compares_to(1.12).should_be(False)
+    spec.compares_to(1.2).should_be(False)
+    spec.compares_to(1.09).should_be(True)
+    spec.compares_to(1.08).should_be(False)
+    spec.compares_to(1.0).should_be(False)
+
+    spec = Spec(FloatValue(1.1, 0.05))
+    spec.tolerance().should_be(0.05)
+    spec.compares_to(1.1).should_be(True)
+    spec.compares_to(1.11).should_be(True)
+    spec.compares_to(1.12).should_be(True)
+    spec.compares_to(1.2).should_be(False)
+    spec.compares_to(1.09).should_be(True)
+    spec.compares_to(1.08).should_be(True)
+    spec.compares_to(1.0).should_be(False)
+
+    spec = Spec(FloatValue(1.11))
+    spec.tolerance().should_be(0.001)
+    
+    spec = Spec(FloatValue(1.99))
+    spec.tolerance().should_be(0.001)
+    
+    spec = Spec(FloatValue(2))
+    spec.tolerance().should_be(0.1)
+    
 @verifiable
 def equalsequals_behaviour():
     ''' EqualsEquals comparator should compare objects with == '''
@@ -208,6 +241,23 @@ def orcomparator_behaviour():
     spec.compares_to('a').should_be(False)
 
     spec = Spec(OrComparator(EqualsEquals(2), GreaterThan(2)))
+    spec.compares_to(2).should_be(True)
+    spec.compares_to(1).should_be(False)
+    spec.compares_to('a').should_be(False)
+
+@verifiable
+def lessthanorequal_behaviour():
+    ''' LessThanOrEqual should compare using <= '''
+    spec = Spec(LessThanOrEqual(2))
+    spec.compares_to(1).should_be(True)
+    spec.compares_to(2).should_be(True)
+    spec.compares_to(3).should_be(False)
+    spec.compares_to('a').should_be(False)
+
+@verifiable
+def greaterthanorequal_behaviour():
+    ''' GreaterThanOrEqual should compare using >= '''
+    spec = Spec(GreaterThanOrEqual(2))
     spec.compares_to(2).should_be(True)
     spec.compares_to(1).should_be(False)
     spec.compares_to('a').should_be(False)

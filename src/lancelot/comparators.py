@@ -5,13 +5,14 @@ interpretation than provided by builtins "==" and "is".
 
 Intended public interface:
  Classes: EqualsEquals, SameAs, LessThan, GreaterThan, StrEquals, 
-     ReprEquals, NoneValue, NotNoneValue, Anything, ExceptionValue,
-     Contain, NotContain, Empty, Length, Type, NotComparator, OrComparator
+     ReprEquals, NoneValue, NotNoneValue, Anything, ExceptionValue, FloatValue
+     Contain, NotContain, Empty, Length, Type,
+     LessThanOrEqual, GreaterThanOrEqual
  Functions: -
  Variables: -
 
 Intended for internal use:
- Classes: Comparator, IsComparator, Nothing
+ Classes: Comparator, IsComparator, NotComparator, OrComparator, Nothing
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
@@ -121,6 +122,36 @@ class ExceptionValue(Comparator):
                 return True
             return StrEquals(self._prototype).compares_to(other)
         return False
+
+class FloatValue(Comparator):
+    ''' Comparator for handling float comparison with tolerance for FPA. '''
+    
+    def __init__(self, prototype, tolerance=None):
+        ''' Provide a prototype float to compare others against, and an
+        optional level of tolerance for the comparison. If no tolerance is
+        specified explicitly then it is calculated as 0.xxxx1 where xxxx is
+        the number of explicit decimal places of the prototype.'''
+        super().__init__(prototype)
+        if tolerance:
+            self._tolerance = tolerance
+        else:
+            prototype_parts = str(prototype).split('.')
+            try:
+                num_dec_places = len(prototype_parts[1]) + 1
+            except:
+                num_dec_places = 1
+            self._tolerance = pow(10, -num_dec_places)
+        
+    def tolerance(self):
+        ''' The tolerance limit for comparison, either specified or calculated
+        in the constructor '''
+        return self._tolerance
+    
+    def compares_to(self, other):
+        ''' True iff other is within +/- tolerance of prototypical instance '''
+        if (self._prototype + self._tolerance) < other:
+            return False
+        return (self._prototype - self._tolerance) <= other
     
 class IsComparator(Comparator):
     ''' Comparator for handling "comparisons" without a prototype instance '''
@@ -198,3 +229,17 @@ class OrComparator(IsComparator):
         if self._first_comparison.compares_to(other):
             return True
         return self._second_comparison.compares_to(other)
+
+class LessThanOrEqual(OrComparator):
+    ''' Comparator for making comparisons using <= . '''
+
+    def __init__(self, prototype):
+        ''' Specify prototype value to be <= other '''
+        super().__init__(LessThan(prototype), EqualsEquals(prototype))
+
+class GreaterThanOrEqual(OrComparator):
+    ''' Comparator for making comparisons using >= . '''
+
+    def __init__(self, prototype):
+        ''' Specify prototype value to be >= other '''
+        super().__init__(GreaterThan(prototype), EqualsEquals(prototype))

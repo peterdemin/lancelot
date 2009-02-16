@@ -23,7 +23,10 @@ def base_constraint_behaviour():
     spec.verify_value(['majestic', 'moose']).should_be(False)
     spec.verify_value({'gumby': 'brain surgeon'}).should_be(False)
     
-    #TODO: collaboration with comparator
+    comparator = MockSpec()
+    spec = Spec(Constraint(comparator))
+    comparator_compares_to = comparator.compares_to(1).will_return(True)
+    spec.verify(lambda: 1).should_collaborate_with(comparator_compares_to)
     
 @verifiable
 def beanything_behaviour():
@@ -90,7 +93,8 @@ def be_type_behaviour():
     spec.verify(number_one).should_raise(unmet_specification)
     
 @verifiable
-def not_should_raise_exception_iff_underlying_check_succeeds():
+def not_behaviour():
+    ''' Not should raise exception iff underlying check succeeds '''
     spec = Spec(Not(BeEqualTo(2)))
     spec.verify(number_one).should_not_raise(UnmetSpecification)
 

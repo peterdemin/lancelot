@@ -160,4 +160,3 @@ class CollaborateWith(Constraint):
                         for collaboration in self._collaborations]
         return ','.join(descriptions)
     
-#TODO: lessthan, lessthanorequalto, greaterthan, greaterthanorequalto, within
