@@ -10,7 +10,8 @@ from lancelot.comparators import Comparator, EqualsEquals, \
 @verifiable
 def base_comparator_behaviour():
     ''' base Comparator should find all compared objects unequivalent.
-     Base class should also delegate __eq__ to compare_to. '''
+    Description by default should be type name.
+    Base class should also delegate __eq__ to compare_to. '''
     Spec(Comparator(1)).compares_to(1).should_be(False)
     Spec(Comparator(2)).compares_to(2).should_be(False)
     Spec(Comparator(3)).compares_to(int).should_be(False)
@@ -21,6 +22,8 @@ def base_comparator_behaviour():
     spec.__call__(1).should_be(False)
     spec.__call__(2).should_be(False)
     spec.__call__(int).should_be(False)
+    
+    Spec(Comparator('x')).description().should_be("comparator 'x'")
 
 @verifiable
 def type_behaviour():
@@ -28,20 +31,24 @@ def type_behaviour():
     spec = Spec(Type(list))
     spec.compares_to([]).should_be(True)
     spec.compares_to({}).should_be(False)
+    spec.description().should_be("type <class 'list'>")
 
     spec = Spec(Type([]))
     spec.compares_to([]).should_be(True)
     spec.compares_to({}).should_be(False)
+    spec.description().should_be("type <class 'list'>")
     
 @verifiable
 def exceptionvalue_behaviour():
     ''' ExceptionValue comparator should compare type and messsage '''
     spec = Spec(ExceptionValue(IndexError('with message')))
+    spec.description().should_be('%r' % IndexError('with message'))
     spec.compares_to(IndexError('with message')).should_be(True)
     spec.compares_to(IndexError('different message')).should_be(False)
     spec.compares_to(ValueError('with message')).should_be(False)
 
     spec = Spec(ExceptionValue(IndexError))
+    spec.description().should_be('IndexError')
     spec.compares_to(IndexError('with message')).should_be(True)
     spec.compares_to(IndexError('different message')).should_be(True)
     spec.compares_to(ValueError('with message')).should_be(False)
@@ -52,6 +59,7 @@ def floatvalue_behaviour():
     spec = Spec(FloatValue(1.1))
     spec.tolerance().should_be(0.01)
     spec.compares_to(1.1).should_be(True)
+    spec.description().should_be('within 0.01 of 1.1')
     spec.compares_to(1.11).should_be(True)
     spec.compares_to(1.12).should_be(False)
     spec.compares_to(1.2).should_be(False)
@@ -61,6 +69,7 @@ def floatvalue_behaviour():
 
     spec = Spec(FloatValue(1.1, 0.05))
     spec.tolerance().should_be(0.05)
+    spec.description().should_be('within 0.05 of 1.1')
     spec.compares_to(1.1).should_be(True)
     spec.compares_to(1.11).should_be(True)
     spec.compares_to(1.12).should_be(True)
@@ -71,6 +80,7 @@ def floatvalue_behaviour():
 
     spec = Spec(FloatValue(1.11))
     spec.tolerance().should_be(0.001)
+    spec.description().should_be('within 0.001 of 1.11')
     
     spec = Spec(FloatValue(1.99))
     spec.tolerance().should_be(0.001)
@@ -82,10 +92,12 @@ def floatvalue_behaviour():
 def equalsequals_behaviour():
     ''' EqualsEquals comparator should compare objects with == '''
     spec = Spec(EqualsEquals(1))
+    spec.description().should_be('== 1')
     spec.compares_to(1).should_be(True)
     spec.compares_to(2).should_be(False)
     
     spec = Spec(EqualsEquals([]))
+    spec.description().should_be('== []')
     spec.compares_to([]).should_be(True)
     spec.compares_to([1]).should_be(False)
     
@@ -93,21 +105,25 @@ def equalsequals_behaviour():
 def sameas_behaviour():
     ''' SameAs comparator should compare objects with "same" / "is" '''
     spec = Spec(SameAs(1))
+    spec.description().should_be('same as 1')
     spec.compares_to(1).should_be(True)
     spec.compares_to(2).should_be(False)
     
     spec = Spec(SameAs([]))
+    spec.description().should_be('same as []')
     spec.compares_to([]).should_be(False) 
     
 @verifiable
 def lessthan_behaviour():
     ''' LessThan comparator should compare objects with < '''
     spec = Spec(LessThan(1))
+    spec.description().should_be('< 1')
     spec.compares_to(0).should_be(True)
     spec.compares_to(1).should_be(False)
     spec.compares_to('a').should_be(False)
     
     spec = Spec(LessThan([1]))
+    spec.description().should_be('< [1]')
     spec.compares_to([]).should_be(True)
     spec.compares_to([1]).should_be(False)
     
@@ -115,11 +131,13 @@ def lessthan_behaviour():
 def greaterthan_behaviour():
     ''' GreaterThan comparator should compare objects with > '''
     spec = Spec(GreaterThan(1))
+    spec.description().should_be('> 1')
     spec.compares_to(2).should_be(True)
     spec.compares_to(1).should_be(False)
     spec.compares_to('a').should_be(False)
     
     spec = Spec(GreaterThan([]))
+    spec.description().should_be('> []')
     spec.compares_to([]).should_be(False)
     spec.compares_to([1]).should_be(True)
     
@@ -127,6 +145,7 @@ def greaterthan_behaviour():
 def contain_behaviour():
     ''' Contain comparator should compare objects with "in" / "contains" '''
     spec = Spec(Contain('a'))
+    spec.description().should_be("contain 'a'")
     spec.compares_to(['a', 'b']).should_be(True)
     spec.compares_to(['a']).should_be(True)
     spec.compares_to(['b']).should_be(False)
@@ -137,6 +156,7 @@ def contain_behaviour():
     spec.compares_to(2).should_be(False)
     
     spec = Spec(Contain(1))
+    spec.description().should_be('contain 1')
     spec.compares_to([1, 2]).should_be(True)
     spec.compares_to([1]).should_be(True)
     spec.compares_to([2]).should_be(False)
@@ -148,6 +168,7 @@ def contain_behaviour():
 def notcontain_behaviour():
     ''' NotContain comparator should negate the behaviour of Contain '''
     spec = Spec(NotContain(1))
+    spec.description().should_be('not contain 1')
     spec.compares_to([1, 2]).should_be(False)
     spec.compares_to([1]).should_be(False)
     spec.compares_to([2]).should_be(True)
@@ -156,6 +177,7 @@ def notcontain_behaviour():
 def length_behaviour():
     ''' Length comparator should compare len(object) to specified length '''
     spec = Spec(Length(1))
+    spec.description().should_be('length 1')
     spec.compares_to([1, 2]).should_be(False)
     spec.compares_to([1]).should_be(True)
     spec.compares_to([2]).should_be(True)
@@ -166,6 +188,7 @@ def length_behaviour():
 def empty_behaviour():
     ''' Empty comparator should compare len(object) to 0 '''
     spec = Spec(Empty())
+    spec.description().should_be('empty')
     spec.compares_to([1, 2]).should_be(False)
     spec.compares_to([1]).should_be(False)
     spec.compares_to([]).should_be(True)
@@ -176,6 +199,7 @@ def empty_behaviour():
 def nonevalue_behaviour():
     ''' NoneValue comparator should compare objects with None '''
     spec = Spec(NoneValue())
+    spec.description().should_be('None')
     spec.compares_to(None).should_be(True)
     spec.compares_to(1).should_be(False)
     spec.compares_to(2).should_be(False)
@@ -186,6 +210,7 @@ def nonevalue_behaviour():
 def notnonevalue_behaviour():
     ''' NotNoneValue comparator should compare objects with not-None '''
     spec = Spec(NotNoneValue())
+    spec.description().should_be('not None')
     spec.compares_to(None).should_be(False)
     spec.compares_to(1).should_be(True)
     spec.compares_to(2).should_be(True)
@@ -196,11 +221,13 @@ def notnonevalue_behaviour():
 def strequals_behaviour():
     ''' StrEquals comparator should compare objects with str() '''
     spec = Spec(StrEquals(1))
+    spec.description().should_be("str() value '1'")
     spec.compares_to(1).should_be(True)
     spec.compares_to('1').should_be(True)
     spec.compares_to([1]).should_be(False)
     
     spec = Spec(StrEquals('1'))
+    spec.description().should_be("str() value '1'")
     spec.compares_to(1).should_be(True)
     spec.compares_to('1').should_be(True)
     spec.compares_to([1]).should_be(False)
@@ -209,11 +236,13 @@ def strequals_behaviour():
 def reprequals_behaviour():
     ''' ReprEquals comparator should compare objects with repr() '''
     spec = Spec(ReprEquals(1))
+    spec.description().should_be('repr() value 1')
     spec.compares_to(1).should_be(True)
     spec.compares_to('1').should_be(False)
     spec.compares_to([1]).should_be(False)
     
     spec = Spec(ReprEquals('1'))
+    spec.description().should_be("repr() value '1'")
     spec.compares_to('1').should_be(True)
     spec.compares_to(1).should_be(False)
     spec.compares_to([1]).should_be(False)
@@ -222,11 +251,13 @@ def reprequals_behaviour():
 def notcomparator_behaviour():
     ''' NotComparator should negate other comparisons '''
     spec = Spec(NotComparator(EqualsEquals(1)))
+    spec.description().should_be('not == 1')
     spec.compares_to(1).should_be(False)
     spec.compares_to('1').should_be(True)
     spec.compares_to([1]).should_be(True)
     
     spec = Spec(NotComparator(EqualsEquals('1')))
+    spec.description().should_be("not == '1'")
     spec.compares_to('1').should_be(False)
     spec.compares_to(1).should_be(True)
     spec.compares_to([1]).should_be(True)
@@ -234,13 +265,15 @@ def notcomparator_behaviour():
 @verifiable
 def orcomparator_behaviour():
     ''' OrComparator should chain "either-or" comparisons together '''
-    spec = Spec(OrComparator(EqualsEquals(2), LessThan(2)))
+    spec = Spec(OrComparator(LessThan(2), EqualsEquals(2)))
+    spec.description().should_be("< 2 or == 2")
     spec.compares_to(1).should_be(True)
     spec.compares_to(2).should_be(True)
     spec.compares_to(3).should_be(False)
     spec.compares_to('a').should_be(False)
 
-    spec = Spec(OrComparator(EqualsEquals(2), GreaterThan(2)))
+    spec = Spec(OrComparator(GreaterThan(2), EqualsEquals(2)))
+    spec.description().should_be("> 2 or == 2")
     spec.compares_to(2).should_be(True)
     spec.compares_to(1).should_be(False)
     spec.compares_to('a').should_be(False)
@@ -249,6 +282,7 @@ def orcomparator_behaviour():
 def lessthanorequal_behaviour():
     ''' LessThanOrEqual should compare using <= '''
     spec = Spec(LessThanOrEqual(2))
+    spec.description().should_be("<= 2")
     spec.compares_to(1).should_be(True)
     spec.compares_to(2).should_be(True)
     spec.compares_to(3).should_be(False)
@@ -258,6 +292,7 @@ def lessthanorequal_behaviour():
 def greaterthanorequal_behaviour():
     ''' GreaterThanOrEqual should compare using >= '''
     spec = Spec(GreaterThanOrEqual(2))
+    spec.description().should_be("=> 2")
     spec.compares_to(2).should_be(True)
     spec.compares_to(1).should_be(False)
     spec.compares_to('a').should_be(False)
@@ -266,6 +301,7 @@ def greaterthanorequal_behaviour():
 def anything_behaviour():
     ''' Anything comparator should find all compared objects equivalent. '''
     spec = Spec(Anything())
+    spec.description().should_be("anything")
     spec.compares_to(1).should_be(True)
     spec.compares_to('1').should_be(True)
     spec.compares_to([1]).should_be(True)
@@ -275,6 +311,7 @@ def anything_behaviour():
 def nothing_behaviour():
     ''' Nothing comparator should never find compared objects equivalent. '''
     spec = Spec(Nothing())
+    spec.description().should_be("nothing")
     spec.compares_to(1).should_be(False)
     spec.compares_to('1').should_be(False)
     spec.compares_to([1]).should_be(False)

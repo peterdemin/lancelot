@@ -33,6 +33,12 @@ class Comparator:
         Subclasses return True if there is an equivalence, False otherwise.
         This base class however always returns False (no equivalence).'''
         return False
+    
+    def description(self):
+        ''' Describe this comparator '''
+        if self._prototype:
+            return '%s %r' % (type(self).__name__.lower(), self._prototype)
+        return '%s' % type(self).__name__.lower()
 
 class EqualsEquals(Comparator):
     ''' Comparator for handling comparison using ==. '''
@@ -41,12 +47,20 @@ class EqualsEquals(Comparator):
         ''' True iff prototypical instance == other '''
         return self._prototype == other
 
+    def description(self):
+        ''' Describe this comparator '''
+        return '== %r' % self._prototype
+
 class SameAs(Comparator):
     ''' Comparator for handling comparison using "same". '''
         
     def compares_to(self, other):
         ''' True iff prototypical instance is other '''
         return self._prototype is other
+
+    def description(self):
+        ''' Describe this comparator '''
+        return 'same as %r' % self._prototype
 
 class LessThan(Comparator):
     ''' Comparator for handling comparison using <. '''
@@ -57,6 +71,10 @@ class LessThan(Comparator):
             return other < self._prototype
         except TypeError:
             return False
+        
+    def description(self):
+        ''' Describe this comparator '''
+        return '< %r' % self._prototype
 
 class GreaterThan(Comparator):
     ''' Comparator for handling comparison using >. '''
@@ -67,6 +85,10 @@ class GreaterThan(Comparator):
             return other > self._prototype 
         except TypeError:
             return False
+
+    def description(self):
+        ''' Describe this comparator '''
+        return '> %r' % self._prototype
 
 class Contain(Comparator):
     ''' Comparator for handling comparison using "in" / "contains". '''
@@ -92,12 +114,20 @@ class StrEquals(Comparator):
         ''' True iff other str(prototypical instance) == str(other) '''
         return str(self._prototype) == str(other)
 
+    def description(self):
+        ''' Describe this comparator '''
+        return 'str() value %r' % str(self._prototype)
+
 class ReprEquals(Comparator):
     ''' Comparator for handling comparison through repr(). '''
         
     def compares_to(self, other):
         ''' True iff other repr(prototypical instance) == repr(other) '''
         return repr(self._prototype) == repr(other)
+
+    def description(self):
+        ''' Describe this comparator '''
+        return 'repr() value %r' % self._prototype
 
 class Type(Comparator):
     ''' Comparator for handling comparison of type() of instances. '''
@@ -110,18 +140,30 @@ class Type(Comparator):
         if isinstance(self._prototype, type):
             return isinstance(other, self._prototype)
         return isinstance(other, type(self._prototype))
+    
+    def description(self):
+        ''' Describe this comparator '''
+        if isinstance(self._prototype, type):
+            return 'type %r' % self._prototype
+        return 'type %r' % type(self._prototype)
 
 class ExceptionValue(Comparator):
     ''' Comparator for handling comparison with Exception instances. '''
         
     def compares_to(self, other):
-        ''' True iff type(other) == type(prototypical exception)
-        and str(other) == str(prototypical exception '''
+        ''' True iff Type(prototypical exception).compares_to(other)
+        and str(other) == str(prototypical exception) '''
         if Type(self._prototype).compares_to(other):
             if isinstance(self._prototype, type):
                 return True
             return StrEquals(self._prototype).compares_to(other)
         return False
+
+    def description(self):
+        ''' Describe this comparator '''
+        if isinstance(self._prototype, type):
+            return self._prototype.__name__
+        return '%r' % self._prototype
 
 class FloatValue(Comparator):
     ''' Comparator for handling float comparison with tolerance for FPA. '''
@@ -153,6 +195,10 @@ class FloatValue(Comparator):
             return False
         return (self._prototype - self._tolerance) <= other
     
+    def description(self):
+        ''' Describe this comparator '''
+        return 'within %s of %s' % (self._tolerance, self._prototype) 
+    
 class IsComparator(Comparator):
     ''' Comparator for handling "comparisons" without a prototype instance '''
     
@@ -166,6 +212,10 @@ class NoneValue(IsComparator):
     def compares_to(self, other):
         ''' True iff other is None (ignoring prototypical instance) '''
         return None == other
+    
+    def description(self):
+        ''' Describe this comparator '''
+        return 'None' 
     
 class Empty(IsComparator):
     ''' Comparator for handling comparison to empty (using len). '''
@@ -199,6 +249,10 @@ class NotComparator(IsComparator):
     def compares_to(self, other):
         ''' True iff other comparator_to_negate not compares_to(other) '''
         return not self._comparator_to_negate.compares_to(other)
+    
+    def description(self):
+        ''' Describe this comparator '''
+        return 'not %s' % self._comparator_to_negate.description()
    
 class NotNoneValue(NotComparator):
     ''' Comparator for handling comparison to anything but None. '''
@@ -229,6 +283,11 @@ class OrComparator(IsComparator):
         if self._first_comparison.compares_to(other):
             return True
         return self._second_comparison.compares_to(other)
+    
+    def description(self):
+        ''' Describe this comparator '''
+        return '%s or %s' % (self._first_comparison.description(), 
+                             self._second_comparison.description())
 
 class LessThanOrEqual(OrComparator):
     ''' Comparator for making comparisons using <= . '''
@@ -236,6 +295,11 @@ class LessThanOrEqual(OrComparator):
     def __init__(self, prototype):
         ''' Specify prototype value to be <= other '''
         super().__init__(LessThan(prototype), EqualsEquals(prototype))
+        self._prototype = prototype
+
+    def description(self):
+        ''' Describe this comparator '''
+        return '<= %r' % self._prototype
 
 class GreaterThanOrEqual(OrComparator):
     ''' Comparator for making comparisons using >= . '''
@@ -243,3 +307,8 @@ class GreaterThanOrEqual(OrComparator):
     def __init__(self, prototype):
         ''' Specify prototype value to be >= other '''
         super().__init__(GreaterThan(prototype), EqualsEquals(prototype))
+        self._prototype = prototype
+        
+    def description(self):
+        ''' Describe this comparator '''
+        return '=> %r' % self._prototype

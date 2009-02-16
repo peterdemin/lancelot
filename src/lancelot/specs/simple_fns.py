@@ -17,4 +17,3 @@ def number_one():
 def string_abc():
     ''' Simple fn that returns the string "abc". ''' 
     return 'abc'
-

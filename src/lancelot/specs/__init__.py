@@ -1,5 +1,5 @@
 '''
-Sub-package with Specs for the behaviours of classes in the library 
+Sub-package with Specs for the behaviours of all core classes 
 '''
 
 import lancelot 

@@ -14,8 +14,9 @@ Copyright 2009 by the author(s). All rights reserved
 '''
 
 from lancelot.calling import MockCall, WrapFunction
-from lancelot.comparators import ExceptionValue
-from lancelot.constraints import BeAnything, BeEqualTo, \
+from lancelot.comparators import Comparator, NotComparator, Contain, \
+                                 ExceptionValue, FloatValue, Anything
+from lancelot.constraints import Constraint, BeEqualTo, \
                                  CollaborateWith, Not, Raise
 from lancelot.verification import UnmetSpecification
 
@@ -28,7 +29,7 @@ class Spec:
         or Spec(class, given=descriptive_callable_setting_up_initial_state) '''
         self._call_stack = []
         self._spec_for = spec_for
-        self._constraint = BeAnything()
+        self._constraint = Constraint()
         self._given = given
         if given:
             self._setup_initial_state()
@@ -63,6 +64,12 @@ class Spec:
             self._wrap_fn(WrapFunction(self, action, ''))
         return self
     
+    def it(self):
+        ''' Return the underlying object whose behaviour is being specified
+        e.g. spec.when(...) spec.then(spec.it()).should...() '''
+        self._wrap_fn(WrapFunction(self, lambda: self._spec_for, ''))
+        return self
+    
     def should(self, constraint):
         ''' Specify the constraint to be met by action's behaviour '''  
         self._constraint = constraint
@@ -80,15 +87,32 @@ class Spec:
     
     def should_be(self, specified):
         ''' An action's behaviour should return a specified value. '''
+        if isinstance(specified, Comparator):
+            return self.should(Constraint(specified))
         return self.should(BeEqualTo(specified))
         
     def should_not_be(self, unspecified):
         ''' An action's behaviour should not return a specified value. '''
+        if isinstance(unspecified, Comparator):
+            return self.should(Constraint(NotComparator(unspecified)))
         return self.should(Not(BeEqualTo(unspecified)))
       
-    def should_collaborate_with(self, *collaborations):
-        ''' An action's behaviour should meet the specified collaborations. '''
-        return self.should(CollaborateWith(*collaborations))
+    def should_collaborate_with(self, *collaborations, and_result=Anything()):
+        ''' An action's behaviour should meet the specified collaborations. 
+        If and_result is specified, then the final return value from actions 
+        performed should be this value (or comparator to a value) '''
+        constraint = CollaborateWith(*collaborations, and_result=and_result)
+        return self.should(constraint)
+
+    def should_contain(self, specified):
+        ''' The result of an action's behaviour should contain a specified 
+        value (e.g. tuples, lists or dicts). '''
+        return self.should(Constraint(Contain(specified)))
+
+    def should_not_contain(self, unspecified):
+        ''' The result of an action's behaviour should not contain a specified 
+        value (e.g. tuples, lists or dicts). '''
+        return self.should(Constraint(NotComparator(Contain(unspecified))))
 
 class MockSpec:
     ''' Allows collaborations between objects to be specified e.g.  
@@ -102,13 +126,14 @@ class MockSpec:
         ''' A new mock specification: created for specifying collaborations 
         comparators are used when verifying that args supplied in a 
         collaboration are those that were specified - by default an
-        ExceptionComparator is used to verify Exception args '''
+        ExceptionValue comparator is used to verify Exception args,
+        and a FloatValue comparator is used to verify float args'''
         self._is_collaborating = False
         self._collaborations = []
         if comparators:
             self._comparators = comparators
         else:
-            self._comparators = {Exception:ExceptionValue}
+            self._comparators = {Exception:ExceptionValue, float:FloatValue}
     
     def verify(self):
         ''' Verify that all the specified collaborations have occurred '''

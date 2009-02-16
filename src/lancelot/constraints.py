@@ -2,7 +2,7 @@
 Functionality for expressing the constraints on behaviour (with should...)
 
 Intended public interface:
- Classes:  BeAnything, Raise, BeEqualTo, BeType, Not, CollaborateWith 
+ Classes:  Raise, BeEqualTo, Not, CollaborateWith 
  Functions: -
  Variables: -
  
@@ -44,18 +44,7 @@ class Constraint:
     
     def describe_constraint(self):
         ''' Describe this constraint '''
-        return 'should be nothing'    
-
-class BeAnything(Constraint):
-    ''' Catch-all should... "be anything" constraint specifier '''
-    
-    def __init__(self):
-        ''' Specify the IsAnything comparator used in verification '''
-        super().__init__(Anything())
-        
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        return 'should be anything'
+        return 'should be %s' % self._comparator.description()
     
 class Raise(Constraint):
     ''' Constraint specifying should... "raise exception..." behaviour '''
@@ -63,7 +52,7 @@ class Raise(Constraint):
     def __init__(self, specified):
         ''' Specify the exception that should raised.
         May be an exception type or instance '''
-        super().__init__()
+        super().__init__(ExceptionValue(specified))
         self._specified = specified
         if isinstance(specified, type):
             self._specified_type = specified
@@ -78,7 +67,7 @@ class Raise(Constraint):
         try:
             self._invoke(callable_result)
         except self._specified_type as raised_exception:
-            if ExceptionValue(self._specified).compares_to(raised_exception):
+            if self.verify_value(raised_exception):
                 return
             msg = '%s, not %r' % (self.describe_constraint(), raised_exception)
             raise UnmetSpecification(msg)
@@ -94,23 +83,6 @@ class BeEqualTo(Constraint):
     def __init__(self, specified):
         ''' Specify the value that should be == '''
         super().__init__(EqualsEquals(specified))
-        self._description = 'should be == %s' % repr(specified)
-        
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        return self._description
-    
-class BeType(Constraint):
-    ''' Constraint specifying should... "be type of..." behaviour '''
-    
-    def __init__(self, specified):
-        ''' Specify what type of thing it should be '''
-        super().__init__(Type(specified))
-        self._description = 'should be type %s' % (specified)
-        
-    def describe_constraint(self):
-        ''' Describe this constraint '''
-        return self._description
         
 class Not(Constraint):
     ''' Constraint specifying should... "not..." behaviour '''
@@ -140,19 +112,21 @@ class Not(Constraint):
 class CollaborateWith(Constraint):
     ''' Constraint specifying should... "collaborate with" behaviour '''
     
-    def __init__(self, *collaborations):
+    def __init__(self, *collaborations, and_result=Anything()):
         ''' Specify what MockSpec collaborations should occur '''
         super().__init__()
         self._collaborations = collaborations
+        self._and_result = and_result
     
     def verify(self, callable_result):
-        ''' Check that the constraint is met '''
+        ''' Check that the constraint is met, including end result if any '''
         mock_specs = []
         for collaboration in self._collaborations:
             mock_specs.append(collaboration.start_collaborating())
-        self._invoke(callable_result)
+        end_result = self._invoke(callable_result)
         for mock_spec in mock_specs:
             mock_spec.verify()
+        BeEqualTo(self._and_result).verify(lambda: end_result)
     
     def describe_constraint(self):
         ''' Describe this constraint '''

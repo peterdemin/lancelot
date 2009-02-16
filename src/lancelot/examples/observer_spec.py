@@ -29,7 +29,8 @@ class Observable:
         
 @lancelot.verifiable
 def observable_observer_behaviour():
-    ''' Illustrate how Spec.should_collaborate_with() and MockSpec interact '''
+    ''' Illustrate how Spec.should_collaborate_with() and MockSpec interact.
+    Note how a new MockSpec is required for each should...() specification '''
     observer = lancelot.MockSpec()
     observable = Observable()
     spec = lancelot.Spec(observable)

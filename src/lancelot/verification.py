@@ -7,7 +7,7 @@ Intended public interface:
  Variables: -
 
 Intended for internal use:
- Variables: All_Verifiable (the default collation of verifiable functions)
+ Variables: ALL_VERIFIABLE (the default collation of verifiable functions)
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
@@ -40,14 +40,23 @@ class ConsoleListener:
         ''' A verification of a function has completed successfully '''
         pass
     
-    def specification_unmet(self, fn, exception):
+    def specification_unmet(self, fn, unmet):
         ''' A verification of a function has completed unsuccessfully '''
-        msg = 'Specification not met: %s' % exception
+        msg = 'Specification not met: %s' % unmet
+        self._exception_raised(msg, unmet)
+        
+    def _exception_raised(self, msg, exception):
+        ''' Print an exception msg and traceback to the console'''
         self._print(msg, to_console=self._stderr)
         tb_items = traceback.extract_tb(exception.__traceback__)
         tb_items.pop(0) # remove AllVerifiable._verify_fn
         for item in traceback.format_list(tb_items):
             self._print(item, end='', to_console=self._stderr)
+    
+    def unexpected_exception(self, fn, exception):
+        ''' An unexpected exception was raised from a function '''
+        msg = 'Unexpected exception: %r' % exception
+        self._exception_raised(msg, exception)
 
     def all_verifiable_ending(self, all_verifiable, outcome):
         ''' A verification run is ending '''
@@ -94,8 +103,11 @@ class AllVerifiable:
             verifiable_fn()
             self._listener.specification_met(verifiable_fn)
             return 1
+        except UnmetSpecification as unmet:
+            self._listener.specification_unmet(verifiable_fn, unmet)
+            return 0
         except Exception as exception:
-            self._listener.specification_unmet(verifiable_fn, exception)
+            self._listener.unexpected_exception(verifiable_fn, exception)
             return 0
 
 ALL_VERIFIABLE = AllVerifiable() # Default collection to verify

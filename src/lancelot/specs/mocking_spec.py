@@ -2,8 +2,7 @@
 
 from lancelot import MockSpec, Spec, verifiable, verify
 from lancelot.calling import MockCall
-from lancelot.comparators import ExceptionValue
-from lancelot.constraints import BeType
+from lancelot.comparators import ExceptionValue, FloatValue, Type
 from lancelot.verification import UnmetSpecification
 
 @verifiable
@@ -126,9 +125,9 @@ def result_of_a_mock_call_successive_times_should_iterate_over_specified_value()
 @verifiable
 def result_of_collaboration_specification_should_be_a_mock_call():
     spec = Spec(MockSpec())
-    spec.foo().should(BeType(MockCall))
-    spec.bar(12).should(BeType(MockCall))
-    spec.baz(keyword='named argument').should(BeType(MockCall))
+    spec.foo().should_be(Type(MockCall))
+    spec.bar(12).should_be(Type(MockCall))
+    spec.baz(keyword='named argument').should_be(Type(MockCall))
 
 @verifiable
 def after_mock_call_starts_collaborating_then_so_should_its_mock_spec():
@@ -176,11 +175,14 @@ def after_start_collaborating_unverified_collaborations_should_be_verified():
     spec.should_not_raise(UnmetSpecification)
     
 @verifiable
-def exception_comparator_should_be_used_by_comparable_for_exceptions():
+def exception_comparator_should_be_used_by_comparable_for_exceptions_and_floats():
     spec = Spec(MockSpec())
     
     spec.comparable(IndexError('the number of the counting'))
-    spec.should(BeType(ExceptionValue))
+    spec.should_be(Type(ExceptionValue))
+
+    spec.comparable(1.99)
+    spec.should_be(Type(FloatValue))
 
     spec.comparable(3).should_be(3)
     
@@ -196,6 +198,13 @@ def exception_comparator_should_be_used_when_verifying_arg_specification():
     spec = Spec(mock_call_result)
     spec.__call__(smelt_of=TypeError('elderberries')).should_not_raise(UnmetSpecification)
 
+@verifiable
+def float_comparator_should_be_used_when_verifying_arg_specification():
+    mock_call = MockSpec().kernigget(3.14)
+    mock_call_result = mock_call.result_of('kernigget')
+    spec = Spec(mock_call_result)
+    spec.__call__(3.141).should_not_raise(UnmetSpecification)
+    
 class NeverEqualToAnythingComparator:
     def __init__(self, obj):
         pass

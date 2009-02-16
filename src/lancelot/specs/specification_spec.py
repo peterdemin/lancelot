@@ -2,7 +2,7 @@
 
 from lancelot import Spec, verifiable, verify
 from lancelot.calling import WrapFunction
-from lancelot.constraints import BeType, Not
+from lancelot.comparators import Type, Length
 from lancelot.verification import UnmetSpecification
 from lancelot.specs.simple_fns import dont_raise_index_error, number_one, \
                                       raise_index_error, string_abc
@@ -53,16 +53,21 @@ def should_be_value_behaviour():
 def given_when_then_behaviour(): 
     ''' given empty list when item appended then list length should be one '''
     spec = Spec([])
-    spec.when(spec.append(object())).then(spec.__len__()).should_be(1)
+    spec.when(spec.append(object())).then(spec.it()).should_be(Length(1))
 
-    empty_list = lambda: []
+    def empty_list():
+        ''' descriptive name for fn returning an empty list '''
+        return []
     spec = Spec(type([]), given=empty_list)
-    spec.when(spec.append('monty')).then(spec.__len__()).should_be(1)
+    spec.when(spec.append('monty')).then(spec.it()).should_be(Length(1))
 
 @verifiable
 def given_typechecking_behaviour():
     ''' Spec for check that given=... is correct type '''
-    spec_for_dict_given_empty_list = lambda: Spec(type({}), given=lambda: [])
+    def spec_for_dict_given_empty_list():
+        ''' callable method to defer instance creation until within Spec '''
+        return Spec(type({}), given=lambda: [])
+    
     spec = Spec(spec_for_dict_given_empty_list)
     type_error = TypeError("type([]) is not <class 'dict'>")
     spec.__call__().should_raise(type_error)
@@ -71,10 +76,10 @@ def given_typechecking_behaviour():
 def spec_getattr_behaviour(): 
     ''' getattr from spec should return wrapper for unknown attributes '''
     spec = Spec(lambda: getattr(Spec('grail'), 'should'))
-    spec.__call__().should(Not(BeType(WrapFunction))) # Spec.should() exists
+    spec.__call__().should_not_be(Type(WrapFunction)) # Spec.should() exists
     
-    spec = Spec(lambda: getattr(Spec('grail'), 'death'))
-    spec.__call__().should(BeType(WrapFunction))  # Spec.death() not exists
+    spec = Spec(lambda: getattr(Spec('life'), 'death'))
+    spec.__call__().should_be(Type(WrapFunction))  # Spec.death() not exists
 
 @verifiable
 def then_behaviour(): 

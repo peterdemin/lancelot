@@ -1,8 +1,8 @@
 ''' Specs for core library classes / behaviours ''' 
 
 from lancelot import MockSpec, Spec, verifiable, verify
-from lancelot.constraints import Constraint, BeAnything, BeEqualTo, BeType, \
-                                 CollaborateWith, Not, Raise
+from lancelot.constraints import Constraint, BeEqualTo, CollaborateWith, \
+                                 Not, Raise
 from lancelot.verification import UnmetSpecification
 from lancelot.specs.simple_fns import dont_raise_index_error, number_one, \
                                       raise_index_error, string_abc
@@ -10,7 +10,8 @@ from lancelot.specs.simple_fns import dont_raise_index_error, number_one, \
 @verifiable
 def base_constraint_behaviour():
     ''' base Constraint should invoke callable and verify the result.
-    Verification should delegate to a comparator, Nothing() by default. '''
+    Verification should delegate to a comparator, Nothing() by default, 
+    that is used to describe the constraint '''
     a_list = []
     with_callable = lambda: a_list.append(True)
     spec = Spec(Constraint())
@@ -28,14 +29,13 @@ def base_constraint_behaviour():
     comparator_compares_to = comparator.compares_to(1).will_return(True)
     spec.verify(lambda: 1).should_collaborate_with(comparator_compares_to)
     
-@verifiable
-def beanything_behaviour():
-    ''' BeAnything constraint should always verify successfully '''
-    spec = Spec(BeAnything())
-    spec.verify(number_one).should_not_raise(UnmetSpecification)
-    spec.verify(string_abc).should_not_raise(UnmetSpecification)
-    spec.verify(dont_raise_index_error).should_not_raise(UnmetSpecification)
-
+    comparator = MockSpec()
+    spec = Spec(Constraint(comparator))
+    comparator_description = comparator.description().will_return('subtitled')
+    spec.describe_constraint()
+    spec.should_collaborate_with(comparator_description,
+                                 and_result='should be subtitled')
+ 
 @verifiable
 def raise_behaviour():
     ''' Raise constraint should check that exception is raised
@@ -80,17 +80,6 @@ def be_equal_to_behaviour():
     msg = "should be == 'def'"
     spec.describe_constraint().should_be(msg)
     spec.verify(string_abc).should_raise(UnmetSpecification)
-
-@verifiable
-def be_type_behaviour():
-    ''' BeType constraint should raise exception iff object types unequal '''
-    spec = Spec(BeType(type('silly walk')))
-    spec.verify(string_abc).should_not_raise(UnmetSpecification)
-    
-    msg = "should be type <class 'str'>"
-    spec.describe_constraint().should_be(msg)
-    unmet_specification = UnmetSpecification(msg + ", not 1")
-    spec.verify(number_one).should_raise(unmet_specification)
     
 @verifiable
 def not_behaviour():
@@ -130,6 +119,19 @@ def collaboratewith_behaviour():
     spec.describe_constraint().should_be(','.join(descriptions))
     # Specified foo(1) then bar(), and was only foo(1)
     spec.verify(lambda: mock_spec.foo(1)).should_raise(UnmetSpecification)
+    
+    mock_spec = MockSpec()
+    spec = Spec(CollaborateWith(mock_spec.foo(), and_result='bar'))
+    # Specified foo() and was foo() but no result is returned 
+    spec.verify(lambda: mock_spec.foo()).should_raise(UnmetSpecification)
+
+    mock_spec = MockSpec()
+    spec = Spec(CollaborateWith(mock_spec.foo().will_return('bar'), 
+                                and_result='bar'))
+    # Specified foo() and was foo() with result 'bar' returned 
+    # Note: and_result refers to the value returned from the callable  
+    # invoked in verify(), not the return value from the mock 
+    spec.verify(lambda: mock_spec.foo()).should_not_raise(UnmetSpecification)
 
 if __name__ == '__main__':
     verify()
