@@ -11,3 +11,6 @@ your option) any later version.
 You should have received a copy of the GNU General Public License and 
 GNU Lesser General Public License along with this program.  If not, 
 see <http://www.gnu.org/licenses/> 
+---
+Please take a look at the lancelot.examples package to see some, er, examples.
+
