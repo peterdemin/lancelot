@@ -13,7 +13,7 @@ Copyright 2009 by the author(s). All rights reserved
 '''
 
 from lancelot.comparators import Nothing, Anything, EqualsEquals, \
-                                 ExceptionValue, Type
+                                 ExceptionValue
 from lancelot.verification import UnmetSpecification
 
 class Constraint:

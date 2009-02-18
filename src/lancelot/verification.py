@@ -85,19 +85,20 @@ class AllVerifiable:
         return len(self._fn_list)
         
     def verify(self):
-        ''' Verify all the verifiable functions in the collation '''
+        ''' Verify all the verifiable functions in the collation.
+        Entry point for usage in module verify() function. '''
         verified = 0
         self._listener.all_verifiable_starting(self)
         for verifiable_fn in self._fn_list:
-            verified += self._verify_fn(verifiable_fn)
+            verified += self.verify_fn(verifiable_fn)
         outcome = {'total': self.total(), 
                    'verified': verified, 
                    'unverified': self.total() - verified}
         self._listener.all_verifiable_ending(self, outcome)
         return outcome 
     
-    def _verify_fn(self, verifiable_fn):
-        ''' Verify a single verifiable function '''
+    def verify_fn(self, verifiable_fn):
+        ''' Verify a single verifiable function (for internal use). '''
         self._listener.verification_started(verifiable_fn)
         try:
             verifiable_fn()
@@ -112,10 +113,10 @@ class AllVerifiable:
 
 ALL_VERIFIABLE = AllVerifiable() # Default collection to verify
 
-def verifiable(annotated_fn, collator=ALL_VERIFIABLE):
+def verifiable(decorated_fn, collator=ALL_VERIFIABLE):
     ''' Function decorator: collates functions for later verification '''
-    collator.include(annotated_fn)
-    return annotated_fn
+    collator.include(decorated_fn)
+    return decorated_fn
 
 def verify(single_verifiable_fn=None):
     ''' Verify either a single specified function or the default collection '''
