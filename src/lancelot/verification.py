@@ -49,7 +49,8 @@ class ConsoleListener:
         ''' Print an exception msg and traceback to the console'''
         self._print(msg, to_console=self._stderr)
         tb_items = traceback.extract_tb(exception.__traceback__)
-        tb_items.pop(0) # remove AllVerifiable._verify_fn
+        if len(tb_items) > 1:
+            tb_items.pop(0) # remove AllVerifiable._verify_fn
         for item in traceback.format_list(tb_items):
             self._print(item, end='', to_console=self._stderr)
     
