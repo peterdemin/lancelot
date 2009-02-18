@@ -29,20 +29,31 @@ def verifiable_decorator_behaviour():
     spec.verifiable(number_one, all_verifiable).should_be(number_one)
     
     num_verifiable_before = all_verifiable.total()
-    spec.when(spec.verifiable(number_one, all_verifiable))
+    spec.when(spec.verifiable(string_abc, all_verifiable))
     spec.then(all_verifiable.total).should_be(num_verifiable_before + 1)
 
 @verifiable
 def all_verif_total_behaviour():
-    ''' total() method should increment as verifiable_fn is included '''
-    spec = Spec(AllVerifiable, given=silent_listener)
-    spec.total().should_be(0)
+    ''' total() method should increment as verifiable_fn is included,
+    and ignore duplicates '''
     
-    spec.when(spec.include(raise_index_error))
-    spec.then(spec.total()).should_be(1)
+    @verifiable
+    def should_increment():
+        spec = Spec(AllVerifiable, given=silent_listener)
+        spec.total().should_be(0)
+        
+        spec.when(spec.include(raise_index_error))
+        spec.then(spec.total()).should_be(1)
+        
+        spec.when(spec.include(dont_raise_index_error))
+        spec.then(spec.total()).should_be(2)
     
-    spec.when(spec.include(dont_raise_index_error))
-    spec.then(spec.total()).should_be(2)
+    @verifiable
+    def should_ignore_duplicates():
+        spec = Spec(AllVerifiable, given=silent_listener)
+        spec.when(spec.include(raise_index_error),
+                  spec.include(raise_index_error))
+        spec.then(spec.total()).should_be(1)
 
 @verifiable
 def all_verif_include_behaviour():
@@ -58,6 +69,7 @@ def all_verif_verify_fn_behaviour():
     a_list = []
     lambda_list_append = lambda: a_list.append(len(a_list))  
     
+    @verifiable
     def should_execute_fn():
         spec = Spec(AllVerifiable, given=silent_listener)
         spec.when(spec.verify_fn(verifiable_fn=string_abc))
@@ -66,23 +78,23 @@ def all_verif_verify_fn_behaviour():
         spec.when(spec.verify_fn(verifiable_fn=lambda_list_append))
         spec.then(a_list.__len__).should_be(1)
 
+    @verifiable
     def should_handle_exceptions():
         spec = Spec(AllVerifiable, given=silent_listener)
         spec.verify_fn(raise_index_error).should_not_raise(Exception)
     
+    @verifiable
     def should_return_0_or_1():
         spec = Spec(AllVerifiable, given=silent_listener)
         spec.verify_fn(verifiable_fn=raise_index_error).should_be(0)
         spec.verify_fn(verifiable_fn=dont_raise_index_error).should_be(1)
 
-    should_execute_fn()
-    should_handle_exceptions()
-    should_return_0_or_1()
-    
 @verifiable
 def  all_verif_verify_behaviour():
     ''' verify() should verify each included item and 
     return the result of all attempted / successful verifications '''
+
+    @verifiable
     def should_verify_each_item():
         a_list = []
         lambda_list_append1 = lambda: a_list.append(0)
@@ -97,6 +109,7 @@ def  all_verif_verify_behaviour():
         spec = Spec(AllVerifiable, given=silent_listener)
         spec.verify().should_be({'total':0, 'verified':0, 'unverified':0})
 
+    @verifiable
     def should_return_all_results(): 
         spec = Spec(AllVerifiable, given=silent_listener)
         spec.when(spec.include(number_one))
@@ -107,9 +120,6 @@ def  all_verif_verify_behaviour():
         spec.then(spec.verify())
         spec.should_be({'total':2, 'verified':1, 'unverified':1})
         
-    should_verify_each_item()
-    should_return_all_results()
-
 @verifiable
 def notification_behaviour(): 
     ''' listener should receive notifications AllVerifiable.verify() '''

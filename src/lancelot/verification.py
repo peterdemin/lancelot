@@ -77,7 +77,8 @@ class AllVerifiable:
     
     def include(self, verifiable_fn):
         ''' Add a verifiable function to the collation '''
-        self._fn_list.append(verifiable_fn)
+        if verifiable_fn not in self._fn_list:
+            self._fn_list.append(verifiable_fn)
         return self
         
     def total(self):
