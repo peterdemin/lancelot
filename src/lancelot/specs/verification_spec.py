@@ -3,7 +3,7 @@
 from lancelot import MockSpec, Spec, verifiable, verify
 from lancelot.comparators import Type
 from lancelot.verification import AllVerifiable, ConsoleListener, \
-                                  UnmetSpecification
+                                  UnmetSpecification, grouping
 from lancelot.specs.simple_fns import dont_raise_index_error, number_one, \
                                       raise_index_error, string_abc
 
@@ -19,6 +19,10 @@ class SilentListener(ConsoleListener):
 def silent_listener():
     ''' Descriptive fn: creates AllVerifiable instance with SilentListener '''
     return AllVerifiable(listener=SilentListener())
+
+def unmet_specification():
+    ''' Simple fn that raises UnmetSpecification. ''' 
+    raise UnmetSpecification()
 
 @verifiable
 def verifiable_decorator_behaviour(): 
@@ -90,7 +94,7 @@ def all_verif_verify_fn_behaviour():
         spec.verify_fn(verifiable_fn=dont_raise_index_error).should_be(1)
 
 @verifiable
-def  all_verif_verify_behaviour():
+def all_verif_verify_behaviour():
     ''' verify() should verify each included item and 
     return the result of all attempted / successful verifications '''
 
@@ -121,13 +125,56 @@ def  all_verif_verify_behaviour():
         spec.should_be({'total':2, 'verified':1, 'unverified':1})
         
 @verifiable
+def grouping_behaviour():
+    ''' grouping decorator should collate verifiable methods within a class,
+    and allow them to be verified in the usual fashion.''' 
+    
+    class RelatedVerifiables:
+        def verifiable1(self):
+            pass
+        def verifiable2(self):
+            pass
+    
+    @verifiable
+    def should_return_decorated_class():
+        spec = Spec(grouping)
+        spec.grouping(RelatedVerifiables, silent_listener())
+        spec.should_be(RelatedVerifiables)
+        
+    @verifiable
+    def methods_should_verify():
+        all_verifiable = silent_listener()
+        def add_related_verifiables():
+            grouping(RelatedVerifiables, all_verifiable)
+            verifiable(RelatedVerifiables.verifiable1, all_verifiable)
+            verifiable(RelatedVerifiables.verifiable2, all_verifiable)
+        all_verifiable.add_related_verifiables = add_related_verifiables
+           
+        spec = Spec(all_verifiable)
+        spec.when(spec.add_related_verifiables())
+        spec.then(spec.total()).should_be(2)
+        spec.then(spec.verify())
+        spec.should_be({'total':2, 'verified':2, 'unverified':0})
+
+@verifiable
+def  all_verif_failfast_behaviour():
+    ''' verify(fail_fast=True) should stop after the first unmet specification
+    or unexpected exception'''    
+    spec = Spec(AllVerifiable, given=silent_listener)
+    spec.when(spec.include(raise_index_error), 
+              spec.include(dont_raise_index_error))
+    spec.then(spec.verify(fail_fast=True))
+    spec.should_be({'total':2, 'verified':0, 'unverified':2, 'fail_fast':True})
+
+    spec = Spec(AllVerifiable, given=silent_listener)
+    spec.when(spec.include(unmet_specification), 
+              spec.include(dont_raise_index_error))
+    spec.then(spec.verify(fail_fast=True))
+    spec.should_be({'total':2, 'verified':0, 'unverified':2, 'fail_fast':True})
+     
+@verifiable
 def notification_behaviour(): 
     ''' listener should receive notifications AllVerifiable.verify() '''
-    
-    def unmet_specification():
-        ''' Simple fn that raises UnmetSpecification. ''' 
-        raise UnmetSpecification()
-
     listener = MockSpec()
     all_verifiable_with_mock_listener = AllVerifiable(listener)
     results = {'total': 3, 'verified': 1, 'unverified': 2}
