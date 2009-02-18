@@ -3,7 +3,8 @@ Functionality for collating together verifiable functions and verifying them.
 
 Intended public interface:
  Classes: UnmetSpecification, ConsoleListener, AllVerifiable
- Functions: verifiable [used as "@verifiable" in client code], verify()
+ Functions: verifiable [used as "@verifiable" in client code], verify(),
+     grouping [used as "@grouping" in Python3 client code]
  Variables: -
 
 Intended for internal use:
@@ -12,7 +13,7 @@ Intended for internal use:
 Copyright 2009 by the author(s). All rights reserved 
 '''
 
-import sys, traceback
+import sys, traceback, types
 
 class UnmetSpecification(Exception):
     ''' Indicator that a Spec should...() specification is unmet '''
@@ -87,7 +88,7 @@ class AllVerifiable:
         ''' Include a group of verifiable functions as bound class methods '''
         class_attrs = grouping_class.__dict__.values()
         functions = [item for item in class_attrs \
-                     if type(item).__name__ == 'function']
+                     if type(item) == types.FunctionType]
         group = grouping_class()
         for fn in functions:
             self._fn_groups[fn] = getattr(group, fn.__name__)

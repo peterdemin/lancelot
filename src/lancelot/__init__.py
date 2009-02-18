@@ -35,7 +35,7 @@ Copyright 2009 by the author(s). All rights reserved
 __version__ = "1.0rc1"
 
 from lancelot.specification import MockSpec, Spec
-from lancelot.verification import verifiable, verify
+from lancelot.verification import grouping, verifiable, verify
 
-__all__ = ['MockSpec', 'Spec', 'verifiable', 'verify']
+__all__ = ['MockSpec', 'Spec', 'grouping', 'verifiable', 'verify']
 

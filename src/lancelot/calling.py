@@ -13,7 +13,7 @@ Copyright 2009 by the author(s). All rights reserved
 '''
 
 from lancelot.verification import UnmetSpecification
-import logging
+import logging, types
 
 class WrapFunction:
     ''' Wraps a callable that is invoked when the specification is verified '''
@@ -22,7 +22,7 @@ class WrapFunction:
         ''' Instance used within_spec, wrapping a named target invocation '''
         self._within_spec = within_spec
         self._target = target
-        if type(target).__name__ == 'function' and target.__name__ == name:
+        if type(target) == types.FunctionType and target.__name__ == name:
             self._name = ''
         else:
             self._name = name

@@ -1,9 +1,9 @@
 ''' Specs for core library classes / behaviours ''' 
 
-from lancelot import MockSpec, Spec, verifiable, verify
+from lancelot import MockSpec, Spec, grouping, verifiable, verify
 from lancelot.comparators import Type
 from lancelot.verification import AllVerifiable, ConsoleListener, \
-                                  UnmetSpecification, grouping
+                                  UnmetSpecification
 from lancelot.specs.simple_fns import dont_raise_index_error, number_one, \
                                       raise_index_error, string_abc
 
