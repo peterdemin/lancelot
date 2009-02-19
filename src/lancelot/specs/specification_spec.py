@@ -82,10 +82,12 @@ def spec_getattr_behaviour():
     spec.__call__().should_be(Type(WrapFunction))  # Spec.death() not exists
 
 @verifiable
-def then_behaviour(): 
-    ''' Spec for then()... actions that call fns outside the spec itself.
-    Note that the action on the spec is called:
+def external_then_behaviour(): 
+    ''' Spec for then()... actions that call outside the spec itself.
+    
+    Note that the action on the spec is invoked in client code with parens():
         spec.then( * spec.__len__() * ).should_be(1)
+        
     but the action outside the spec is NOT:
         spec.then( * 'they called him brian'.__len__ * ).should_be(21) 
     '''
@@ -93,6 +95,13 @@ def then_behaviour():
     spec.when(spec.append('brian'))
     spec.then(spec.__len__()).should_be(1)
     spec.then('they called him brian'.__len__).should_be(21) 
+    
+@verifiable
+def should_contain_behaviour():
+    ''' should_ and should_not_ contain methods delegate to Contain '''
+    spec = Spec(['brave', 'brave', 'sir robin'])
+    spec.it().should_contain('brave')
+    spec.it().should_not_contain('bravely ran away')
     
 if __name__ == '__main__':
     verify()

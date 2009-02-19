@@ -1,26 +1,26 @@
 ''' Specs for core library classes / behaviours ''' 
 
-from lancelot import Spec, verifiable, verify
+from lancelot import Spec, grouping, verifiable, verify
 from lancelot.comparators import Comparator, EqualsEquals, \
      ExceptionValue, SameAs, LessThan, GreaterThan, Contain, \
      NoneValue, NotNoneValue, FloatValue, StrEquals, ReprEquals, Anything, \
      Nothing, NotComparator, OrComparator, NotContain, Length, Empty, Type, \
      LessThanOrEqual, GreaterThanOrEqual
 
-@verifiable
-def base_comparator_behaviour():
-    ''' base Comparator should find all compared objects unequivalent.
-    Description by default should be type name.
-    Base class should also delegate __eq__ to compare_to. '''
+@grouping
+class BaseComparatorBehaviour:
+    ''' A group of specifications for Comparator behaviour '''
     
     @verifiable
-    def should_find_nothing_equivalent():
+    def should_find_nothing_equivalent(self):
+        ''' base Comparator should find all compared objects unequivalent. '''
         Spec(Comparator(1)).compares_to(1).should_be(False)
         Spec(Comparator(2)).compares_to(2).should_be(False)
         Spec(Comparator(3)).compares_to(int).should_be(False)
 
     @verifiable
-    def should_delegate_eq():
+    def should_delegate_eq(self):
+        ''' base Comparator should delegate __eq__ to compare_to. '''
         #TODO: nicer way of forcing spec to use underlying __eq__
         base_comparator_equals = Comparator(1).__eq__
         spec = Spec(base_comparator_equals)
@@ -29,8 +29,10 @@ def base_comparator_behaviour():
         spec.__call__(int).should_be(False)
     
     @verifiable
-    def should_use_comparator_desc():
+    def should_use_comparator_desc(self):
+        ''' base Comparator description should be type name plus prototype '''
         Spec(Comparator('x')).description().should_be("comparator 'x'")
+        Spec(Comparator(1)).description().should_be("comparator 1")
 
 @verifiable
 def type_behaviour():

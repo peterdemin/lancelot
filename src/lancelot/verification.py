@@ -136,11 +136,17 @@ ALL_VERIFIABLE = AllVerifiable() # Default collection to verify
 
 def verifiable(decorated_fn, collator=ALL_VERIFIABLE):
     ''' Function decorator: collates functions for later verification '''
+    if not hasattr(decorated_fn, '__call__'):
+        msg = '%r is not callable, so it cannot be verifiable'
+        raise TypeError(msg % decorated_fn)
     collator.include(decorated_fn)
     return decorated_fn
 
 def grouping(decorated_class, collator=ALL_VERIFIABLE):
     ''' Class decorator: collates groups of methods for later verification '''
+    if not isinstance(decorated_class, type):
+        msg = '%r is not a type: perhaps you meant to use @verifiable instead?'
+        raise TypeError(msg % decorated_class) 
     collator.include_grouping(decorated_class)
     return decorated_class
 
