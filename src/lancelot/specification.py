@@ -15,7 +15,7 @@ Copyright 2009 by the author(s). All rights reserved
 
 from lancelot.calling import MockCall, WrapFunction
 from lancelot.comparators import Comparator, NotComparator, Contain, \
-                                 ExceptionValue, FloatValue, Anything
+                                 ExceptionValue, FloatValue
 from lancelot.constraints import Constraint, BeEqualTo, \
                                  CollaborateWith, Not, Raise
 from lancelot.verification import UnmetSpecification
@@ -97,7 +97,7 @@ class Spec:
             return self.should(Constraint(NotComparator(unspecified)))
         return self.should(Not(BeEqualTo(unspecified)))
       
-    def should_collaborate_with(self, *collaborations, and_result=Anything()):
+    def should_collaborate_with(self, *collaborations, and_result=None):
         ''' An action's behaviour should meet the specified collaborations. 
         If and_result is specified, then the final return value from actions 
         performed should be this value (or comparator to a value) '''

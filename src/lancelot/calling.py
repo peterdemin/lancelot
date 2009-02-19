@@ -143,4 +143,3 @@ class MockCall:
             return self._specified_result[self._current_time -1]
         except IndexError:
             return self._specified_result[0]
-        return result
