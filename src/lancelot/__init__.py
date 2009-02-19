@@ -8,15 +8,15 @@ for python inspired by the BDD idiom of test driven development.
 Example usage scenarios are supplied with this package, e.g.
 
 - standalone function fib(ordinal): 
-    Spec(fib).fib(0).should_be(0)
+    Spec(fib).fib(1).should_be(1)
 
 - class Stack with push(), pop() and peek() methods:
-    spec = Spec(Stack, given=new_stack)
-    spec.when(spec.push(value='a'))
-    spec.then(spec.peek()).should_be('a')
-    spec.then(spec.pop()).should_be('a')
-    spec.then(spec.peek()).should_raise(IndexError)
-    spec.then(spec.pop()).should_raise(IndexError)
+    stack = Spec(Stack, given=new_stack)
+    stack.when(stack.push(value='a'))
+    stack.then(stack.peek()).should_be('a')
+    stack.then(stack.pop()).should_be('a')
+    stack.then(stack.peek()).should_raise(IndexError)
+    stack.then(stack.pop()).should_raise(IndexError)
 
 - collaborating classes Observable and Observer:
     observer = lancelot.MockSpec()

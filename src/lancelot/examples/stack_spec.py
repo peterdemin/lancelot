@@ -38,39 +38,39 @@ def behaviour_of_new_stack():
     
     lancelot.Spec(Stack, given=new_stack).peek().should_raise(IndexError)
     
-    spec = lancelot.Spec(Stack, given=new_stack)
-    spec.pop().should_raise(IndexError)
-    spec.then(spec.pop()).should_raise(IndexError)
+    stack = lancelot.Spec(Stack, given=new_stack)
+    stack.pop().should_raise(IndexError)
+    stack.then(stack.pop()).should_raise(IndexError)
     
-    spec = lancelot.Spec(Stack, given=new_stack)
-    spec.peek().should_raise(IndexError)
-    spec.then(spec.pop()).should_raise(IndexError)
+    stack = lancelot.Spec(Stack, given=new_stack)
+    stack.peek().should_raise(IndexError)
+    stack.then(stack.pop()).should_raise(IndexError)
 
 @lancelot.verifiable
 def behaviour_of_stack_with_values():
     ''' Illustrate Spec when(...), then(...) sequence 
     (Behaviour: when stack is non-empty then able to peek or pop values) '''
-    spec = lancelot.Spec(Stack, given=new_stack)
-    spec.when(spec.push(value='a'))
-    spec.then(spec.peek()).should_be('a')
-    spec.then(spec.pop()).should_be('a')
-    spec.then(spec.peek()).should_raise(IndexError)
-    spec.then(spec.pop()).should_raise(IndexError)
+    stack = lancelot.Spec(Stack, given=new_stack)
+    stack.when(stack.push(value='a'))
+    stack.then(stack.peek()).should_be('a')
+    stack.then(stack.pop()).should_be('a')
+    stack.then(stack.peek()).should_raise(IndexError)
+    stack.then(stack.pop()).should_raise(IndexError)
     
-    spec = lancelot.Spec(Stack, given=new_stack)
-    spec.when(spec.push(value=1))
-    spec.then(spec.pop()).should_be(1)
-    spec.then(spec.peek()).should_raise(IndexError)
-    spec.then(spec.pop()).should_raise(IndexError)
+    stack = lancelot.Spec(Stack, given=new_stack)
+    stack.when(stack.push(value=1))
+    stack.then(stack.pop()).should_be(1)
+    stack.then(stack.peek()).should_raise(IndexError)
+    stack.then(stack.pop()).should_raise(IndexError)
     
-    spec = lancelot.Spec(Stack, given=new_stack)
-    spec.when(spec.push(value='a'), spec.push(value='b'))
-    spec.then(spec.peek()).should_be('b')
-    spec.then(spec.pop()).should_be('b')
-    spec.then(spec.peek()).should_be('a')
-    spec.then(spec.pop()).should_be('a')
-    spec.then(spec.pop()).should_raise(IndexError)
-    spec.then(spec.peek()).should_raise(IndexError)
+    stack = lancelot.Spec(Stack, given=new_stack)
+    stack.when(stack.push(value='a'), stack.push(value='b'))
+    stack.then(stack.peek()).should_be('b')
+    stack.then(stack.pop()).should_be('b')
+    stack.then(stack.peek()).should_be('a')
+    stack.then(stack.pop()).should_be('a')
+    stack.then(stack.pop()).should_raise(IndexError)
+    stack.then(stack.peek()).should_raise(IndexError)
     
 if __name__ == '__main__':
     # Verify all the specs as a collection 

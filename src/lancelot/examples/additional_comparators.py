@@ -22,19 +22,16 @@ def value_based_comparators():
 @lancelot.verifiable
 def content_based_comparators():
     ''' Illustrate use of should_contain() and should_not_contain() with first
-    a list, then a dict'''
+    a str, then a dict'''
     camelot = 'a silly place'
     spec = lancelot.Spec(camelot)
     spec.split().should_contain('place')
     spec.split().should_not_contain('sequins')
     
-    def one_day_lad():
-        ''' Simple fn to return a dict that can be used in example '''
-        return {'all this':'will be yours'}
-    
+    one_day_lad = {'all this':'will be yours'}
     spec = lancelot.Spec(one_day_lad)
-    spec.one_day_lad().should_contain('all this')
-    spec.one_day_lad().should_not_contain('swamp')
+    spec.it().should_contain('all this')
+    spec.it().should_not_contain('swamp')
  
 @lancelot.verifiable
 def length_based_comparators():
