@@ -16,10 +16,10 @@ from lancelot.verification import UnmetSpecification
 import logging, types
 
 class WrapFunction:
-    ''' Wraps a callable that is invoked when the specification is verified '''
+    ''' Wraps a callable that is invoked later for its result() '''
     
     def __init__(self, within_spec, target, name):
-        ''' Instance used within_spec, wrapping a named target invocation '''
+        ''' Instance used within_spec, wrapping a named target __call__ '''
         self._within_spec = within_spec
         self._target = target
         if type(target) == types.FunctionType and target.__name__ == name:
@@ -36,7 +36,7 @@ class WrapFunction:
         return self._within_spec
     
     def result(self):
-        ''' Perform the actual invocation ''' 
+        ''' Perform the actual invocation on the target''' 
         logging.debug('wrapper executing %s %s %s %s' % \
                       (self._target, self._name, self._args, self._kwds))
         if self._name:
@@ -59,7 +59,7 @@ class MockCall:
         self._current_time = 0
         
     def __call__(self, *args, **kwds):
-        ''' Receive the args specified in a should_collaborate... block 
+        ''' Receive the args specified in a should_collaborate() block 
         while in "specification" mode '''
         self._specified_args = self._mock_spec.comparable_args(args)
         self._specified_kwds = self._mock_spec.comparable_kwds(kwds)

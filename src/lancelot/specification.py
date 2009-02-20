@@ -40,7 +40,7 @@ class Spec:
         if isinstance(initial_state, self._spec_for):
             self._spec_for = initial_state
             return
-        msg = 'type(%s) is not %s' % (initial_state, self._spec_for)
+        msg = '%s is not instance of %r' % (initial_state, self._spec_for)
         raise TypeError(msg)
             
     def __getattr__(self, name):
@@ -123,7 +123,7 @@ class MockSpec:
     '''
     
     def __init__(self, comparators=None):
-        ''' A new mock specification: created for specifying collaborations 
+        ''' A new mock specification: created for specifying collaborations. 
         comparators are used when verifying that args supplied in a 
         collaboration are those that were specified - by default an
         ExceptionValue comparator is used to verify Exception args,

@@ -69,7 +69,7 @@ def given_typechecking_behaviour():
         return Spec(type({}), given=lambda: [])
     
     spec = Spec(spec_for_dict_given_empty_list)
-    type_error = TypeError("type([]) is not <class 'dict'>")
+    type_error = TypeError("[] is not instance of <class 'dict'>")
     spec.__call__().should_raise(type_error)
 
 @verifiable
