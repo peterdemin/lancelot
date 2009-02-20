@@ -171,7 +171,7 @@ class FloatValue(Comparator):
     def __init__(self, prototype, tolerance=None):
         ''' Provide a prototype float to compare others against, and an
         optional level of tolerance for the comparison. If no tolerance is
-        specified explicitly then it is calculated as 0.xxxx1 where xxxx is
+        specified then it is calculated as 0.xxxx1 where xxxx is
         the number of explicit decimal places of the prototype.'''
         super().__init__(prototype)
         if tolerance:
@@ -202,9 +202,9 @@ class FloatValue(Comparator):
 class IsComparator(Comparator):
     ''' Comparator for handling "comparisons" without a prototype instance '''
     
-    def __init__(self):
-        ''' No args constructor since the prototypical instance is ignored '''
-        super().__init__(None)
+    def __init__(self, prototype=None):
+        ''' Allow no constructor args since prototypical instance is ignored '''
+        super().__init__(prototype)
         
 class NoneValue(IsComparator):
     ''' Comparator for handling comparison to None. '''

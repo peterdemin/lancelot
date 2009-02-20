@@ -120,6 +120,7 @@ class CollaborateWith(Constraint):
     
     def verify(self, callable_result):
         ''' Check that the constraint is met, including end result if any '''
+        #TODO: ugly?
         mock_specs = [collaboration.start_collaborating() \
                       for collaboration in self._collaborations]
         end_result = self._invoke(callable_result)
