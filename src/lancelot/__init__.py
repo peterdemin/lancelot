@@ -28,11 +28,13 @@ Example usage scenarios are supplied with this package, e.g.
     
 Additional ways to specify argument or return values in collaborations or 
     constraints are available in the lancelot.comparators sub-package. 
+    
+The latest source code is available at http://code.launchpad.net/lancelot.
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
 
-__version__ = "1.0rc1"
+__version__ = "1.0rc2"
 
 from lancelot.specification import MockSpec, Spec
 from lancelot.verification import grouping, verifiable, verify
