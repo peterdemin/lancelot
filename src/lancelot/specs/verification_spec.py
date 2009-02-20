@@ -210,15 +210,18 @@ def notification_behaviour():
               spec.include(raise_index_error),
               spec.include(unmet_specification)) 
     spec.then(spec.verify())
-    spec.should_collaborate_with(listener.all_verifiable_starting(all_verifiable_with_mock_listener),
-                                 listener.verification_started(string_abc),
-                                 listener.specification_met(string_abc),
-                                 listener.verification_started(raise_index_error),
-                                 listener.unexpected_exception(raise_index_error, Type(IndexError)),
-                                 listener.verification_started(unmet_specification),
-                                 listener.specification_unmet(unmet_specification, Type(UnmetSpecification)),
-                                 listener.all_verifiable_ending(all_verifiable_with_mock_listener, results),
-                                 and_result = results)
+    spec.should_collaborate_with(
+        listener.all_verifiable_starting(all_verifiable_with_mock_listener),
+        listener.verification_started(string_abc),
+        listener.specification_met(string_abc),
+        listener.verification_started(raise_index_error),
+        listener.unexpected_exception(raise_index_error, Type(IndexError)),
+        listener.verification_started(unmet_specification),
+        listener.specification_unmet(unmet_specification, 
+                                     Type(UnmetSpecification)),
+        listener.all_verifiable_ending(all_verifiable_with_mock_listener, 
+                                       results),
+        and_result = results)
 
 if __name__ == '__main__':
     verify()

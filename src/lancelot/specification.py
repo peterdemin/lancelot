@@ -15,9 +15,8 @@ Copyright 2009 by the author(s). All rights reserved
 
 from lancelot.calling import MockCall, WrapFunction
 from lancelot.comparators import Comparator, NotComparator, Contain, \
-                                 ExceptionValue, FloatValue
-from lancelot.constraints import Constraint, BeEqualTo, \
-                                 CollaborateWith, Not, Raise
+                                 ExceptionValue, FloatValue, EqualsEquals
+from lancelot.constraints import Constraint, CollaborateWith, Not, Raise
 from lancelot.verification import UnmetSpecification
 
 class Spec:
@@ -76,12 +75,12 @@ class Spec:
         constraint.verify(self._call_stack.pop().result)
         return self
     
-    def should_raise(self, specified):
+    def should_raise(self, specified=Exception):
         ''' An action's behaviour should raise an exception.
         The specified exception can either be a type, or an instance '''
         return self.should(Raise(specified))
 
-    def should_not_raise(self, unspecified):
+    def should_not_raise(self, unspecified=Exception):
         ''' An action's behaviour should not raise an exception. '''
         return self.should(Not(Raise(unspecified)))
     
@@ -89,13 +88,13 @@ class Spec:
         ''' An action's behaviour should return a specified value. '''
         if isinstance(specified, Comparator):
             return self.should(Constraint(specified))
-        return self.should(BeEqualTo(specified))
+        return self.should(Constraint(EqualsEquals(specified)))
         
     def should_not_be(self, unspecified):
         ''' An action's behaviour should not return a specified value. '''
         if isinstance(unspecified, Comparator):
             return self.should(Constraint(NotComparator(unspecified)))
-        return self.should(Not(BeEqualTo(unspecified)))
+        return self.should(Not(Constraint(EqualsEquals(unspecified))))
       
     def should_collaborate_with(self, *collaborations, and_result=None):
         ''' An action's behaviour should meet the specified collaborations. 
@@ -130,10 +129,11 @@ class MockSpec:
         and a FloatValue comparator is used to verify float args'''
         self._is_collaborating = False
         self._collaborations = []
-        if comparators:
-            self._comparators = comparators
-        else:
-            self._comparators = {Exception:ExceptionValue, float:FloatValue}
+        self._comparators = {Exception:ExceptionValue, float:FloatValue}
+        try:
+            self._comparators.update(comparators)
+        except TypeError:
+            pass
     
     def verify(self):
         ''' Verify that all the specified collaborations have occurred '''
@@ -163,7 +163,7 @@ class MockSpec:
         for cls, comparator in self._comparators.items():
             if isinstance(value, cls):
                 return comparator(value)
-        return value
+        return EqualsEquals(value)
     
     def comparable_args(self, args):
         ''' Convert all args (tuple) into comparable values '''
@@ -176,13 +176,11 @@ class MockSpec:
             comparable_kwds[kwd] = self.comparable(value)
         return comparable_kwds
         
-    #TODO: ugly?
     def start_collaborating(self):
         ''' Switch to collaboration mode '''
         self._is_collaborating = True
         
-    #TODO: ugly?
-    def collaboration_verified(self, mock_call):
+    def collaboration_over(self, mock_call):
         ''' A specified collaboration has finished '''
         self._collaborations.remove(mock_call)
     

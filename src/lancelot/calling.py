@@ -7,7 +7,8 @@ Intended public interface:
  Variables: -
 
 Intended for internal use:
- -
+ Classes: MockResult
+ Functions: _format_args()
 
 Copyright 2009 by the author(s). All rights reserved 
 '''
@@ -44,6 +45,13 @@ class WrapFunction:
             return call(*self._args, **self._kwds)
         return self._target(*self._args, **self._kwds)
 
+def _format_args(args, kwds):
+    ''' Format args for prettier display '''
+    formatted_args = ['%r' % arg for arg in args]
+    formatted_args.extend(['%s=%r' % (kwd, value) 
+                           for kwd, value in kwds.items()])
+    return '(%s)' % ','.join(formatted_args)
+    
 class MockCall:
     ''' Wraps an instance of a collaboration for a Mock Specification '''
       
@@ -54,15 +62,13 @@ class MockCall:
         self._name = name
         self._specified_args = ()
         self._specified_kwds = {}
-        self._specified_result = (None,)
-        self._successive_times = 1
-        self._current_time = 0
+        self._specified_result = MockResult(self)
         
     def __call__(self, *args, **kwds):
         ''' Receive the args specified in a should_collaborate() block 
         while in "specification" mode '''
-        self._specified_args = self._mock_spec.comparable_args(args)
-        self._specified_kwds = self._mock_spec.comparable_kwds(kwds)
+        self._specified_args = args
+        self._specified_kwds = kwds
         return self
         
     def will_return(self, *values):
@@ -70,7 +76,15 @@ class MockCall:
         If a list of values is given they will be iterated over on each
         occasion the collaboration occurs, otherwise the same value will be
         used every time '''
-        self._specified_result = values
+        self._specified_result.supplies(*values)
+        return self
+
+    def will_raise(self, *exceptions):
+        ''' Specify the exceptions raised from the collaboration.
+        If a list of values is given they will be iterated over on each
+        occasion the collaboration occurs, otherwise the same value will be
+        used every time '''
+        self._specified_result.raises(*exceptions)
         return self
     
     def once(self):
@@ -83,10 +97,9 @@ class MockCall:
     
     def times(self, num_times):
         ''' Specify that the collaboration will happen num_times '''
-        self._successive_times = num_times
+        self._specified_result.times(num_times)
         return self
     
-    #TODO: ugly?
     def start_collaborating(self):
         ''' Switch from "specification" to "collaboration" mode '''
         self._mock_spec.start_collaborating()
@@ -95,51 +108,80 @@ class MockCall:
     def description(self):
         ''' Describe this part of the should_collaborate specification '''
         return 'should be collaborating with %s%s' % \
-            (self._name, self._format_specified_args())
-    
-    def _format_specified_args(self):
-        ''' Format the args specified in a should_collaborate... block '''
-        return self._format_args(self._specified_args, self._specified_kwds)
-
-    def _format_args(self, args, kwds):
-        ''' Format args for prettier display '''
-        formatted_args = ['%r' % arg for arg in args]
-        formatted_args.extend(['%s=%r' % (kwd, value) 
-                               for kwd, value in kwds.items()])
-        return '(%s)' % ','.join(formatted_args)
+            (self._name, 
+             _format_args(self._specified_args, self._specified_kwds))
     
     def result_of(self, name):
         ''' Check that the collaboration is as specified,
         and return the current value specified by will_return '''
-        if name == self._name:
-            self._remove_from_spec()
-            return self._current_result
-        raise UnmetSpecification('%s, not %s()' % (self.description(), name))
-    
-    #TODO: ugly?
-    def _remove_from_spec(self):
-        ''' Check the number of times that this collaboration was specified
-        to occur, and remove this collaboration from those remaining '''
-        self._current_time += 1
-        if self._successive_times == self._current_time:
-            self._mock_spec.collaboration_verified(self)
+        if name != self._name:
+            msg = '%s, not %s()' % (self.description(), name)
+            raise UnmetSpecification(msg)
+        return self._current_result
     
     def _verify(self, *args, **kwds):
         ''' Check that the collaboration is as specified '''
-        if self._successive_times < self._current_time:
-            msg = '%s only %s successive times' % \
-                (self.description(), self._successive_times)
+        if self._mock_spec.comparable_args(self._specified_args) != args \
+        or self._mock_spec.comparable_kwds(self._specified_kwds) != kwds:
+            supplied = _format_args(args, kwds)
+            msg = '%s, not %s%s' % (self.description(), self._name, supplied)
             raise UnmetSpecification(msg)
-        if self._specified_args == args and self._specified_kwds == kwds:
-            return 
-        supplied = self._format_args(args, kwds)
-        msg = '%s, not %s%s' % (self.description(), self._name, supplied)
-        raise UnmetSpecification(msg)
 
     def _current_result(self, *args, **kwds):
         ''' The current will_return value for this collaboration '''
         self._verify(*args, **kwds)
-        try:
-            return self._specified_result[self._current_time -1]
-        except IndexError:
-            return self._specified_result[0]
+        result = self._specified_result.next()
+        if self._specified_result.times_remaining() == 0:
+            self._mock_spec.collaboration_over(self)
+        return result
+
+class MockResult:
+    ''' Class responsible for supplying result values for a MockCall '''
+    
+    def __init__(self, mock_call):
+        ''' An instance for a mock call.'''
+        self._mock_call = mock_call
+        self._values = [None]
+        self._specified_times = 1
+        self._is_raising = False
+        
+    def supplies(self, *values):
+        ''' Specify the result values to use.
+        len(values) must be 1, or == self._specified_times. '''
+        self._values = []
+        self._values.extend(values)
+        self.times(self._specified_times)
+        
+    def raises(self, *exceptions):
+        ''' Specify the exceptions to raise. Overrides any previous calls to  
+        supplies(). len(exceptions) must be 1, or == self._specified_times. '''
+        self._is_raising = True
+        self.supplies(*exceptions)
+        
+    def times(self, num_times):
+        ''' Supply the result value num_times '''
+        self._specified_times = num_times
+        if len(self._values) == 1 and num_times > 1:
+            self._values = [self._values[0] for i in range(0, num_times)]
+        elif len(self._values) != num_times:
+            msg = 'num specified return values %s does not match num times %s'
+            raise ValueError(msg % (len(self._values), num_times))
+    
+    def specified_times(self):
+        ''' The number of times the result value will be supplied '''
+        return self._specified_times
+    
+    def times_remaining(self):
+        ''' The remaining times that the result value to be supplied '''
+        return len(self._values)
+    
+    def next(self):
+        ''' Supply the next result value '''
+        if self.times_remaining() == 0:
+            msg = '%s only %s successive times' % \
+                (self._mock_call.description(), self.specified_times())
+            raise UnmetSpecification(msg)
+        next_value = self._values.pop(0)
+        if self._is_raising:
+            raise next_value
+        return next_value

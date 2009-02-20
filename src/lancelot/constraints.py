@@ -2,7 +2,7 @@
 Functionality for expressing the constraints on behaviour (with should...)
 
 Intended public interface:
- Classes:  Raise, BeEqualTo, Not, CollaborateWith 
+ Classes:  Raise, Not, CollaborateWith 
  Functions: -
  Variables: -
  
@@ -77,13 +77,6 @@ class Raise(Constraint):
         ''' Describe this constraint '''
         return self._description
         
-class BeEqualTo(Constraint):
-    ''' Constraint specifying should... "be == to..." behaviour '''
-    
-    def __init__(self, specified):
-        ''' Specify the value that should be == '''
-        super().__init__(EqualsEquals(specified))
-        
 class Not(Constraint):
     ''' Constraint specifying should... "not..." behaviour '''
     
@@ -126,7 +119,7 @@ class CollaborateWith(Constraint):
         end_result = self._invoke(callable_result)
         for mock_spec in mock_specs:
             mock_spec.verify()
-        BeEqualTo(self._and_result).verify(lambda: end_result)
+        Constraint(EqualsEquals(self._and_result)).verify(lambda: end_result)
     
     def describe_constraint(self):
         ''' Describe this constraint '''

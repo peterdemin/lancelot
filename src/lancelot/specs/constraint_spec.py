@@ -1,11 +1,11 @@
 ''' Specs for core library classes / behaviours ''' 
 
 from lancelot import MockSpec, Spec, grouping, verifiable, verify
-from lancelot.constraints import Constraint, BeEqualTo, CollaborateWith, \
-                                 Not, Raise
+from lancelot.constraints import Constraint, CollaborateWith, Not, Raise, \
+                                 EqualsEquals
 from lancelot.verification import UnmetSpecification
 from lancelot.specs.simple_fns import dont_raise_index_error, number_one, \
-                                      raise_index_error, string_abc
+                                      raise_index_error
 
 @grouping
 class BaseConstraintBehaviour:
@@ -85,38 +85,19 @@ class RaiseBehaviour:
         unmet_msg = msg + ", not IndexError('with message',)"
         unmet_specification = UnmetSpecification(unmet_msg)
         spec.verify(raise_index_error).should_raise(unmet_specification)
-    
-@verifiable
-def be_equal_to_behaviour():
-    ''' BeEqualTo constraint should raise exception iff objects unequal '''
-    spec = Spec(BeEqualTo(1))
-    spec.verify(number_one).should_not_raise(UnmetSpecification)
-
-    spec = Spec(BeEqualTo(2))
-    msg = 'should be == 2'
-    spec.describe_constraint().should_be(msg)
-    spec.verify(number_one).should_raise(UnmetSpecification)
-    
-    spec = Spec(BeEqualTo('abc'))
-    spec.verify(string_abc).should_not_raise(UnmetSpecification)
-
-    spec = Spec(BeEqualTo('def'))
-    msg = "should be == 'def'"
-    spec.describe_constraint().should_be(msg)
-    spec.verify(string_abc).should_raise(UnmetSpecification)
-    
+ 
 @verifiable
 def not_behaviour():
     ''' Not should raise exception iff underlying check succeeds '''
-    spec = Spec(Not(BeEqualTo(2)))
+    spec = Spec(Not(Constraint(EqualsEquals(2))))
     spec.verify(number_one).should_not_raise(UnmetSpecification)
 
-    spec = Spec(Not(BeEqualTo(1)))
+    spec = Spec(Not(Constraint(EqualsEquals(1))))
     msg = 'should not be == 1'
     spec.describe_constraint().should_be(msg)
     spec.verify(number_one).should_raise(UnmetSpecification(msg))
     
-    spec = Spec(Not(Not(BeEqualTo(2))))
+    spec = Spec(Not(Not(Constraint(EqualsEquals(2)))))
     msg = 'should be == 2'
     spec.describe_constraint().should_be(msg)
     spec.verify(number_one).should_raise(UnmetSpecification(msg))

@@ -103,5 +103,12 @@ def should_contain_behaviour():
     spec.it().should_contain('brave')
     spec.it().should_not_contain('bravely ran away')
     
+@verifiable
+def should_raise_optional_args():
+    ''' should_raise and should_not_raise should not require args, and if
+    no args are specified then the catch-all value of Exception is assumed '''
+    Spec(raise_index_error).raise_index_error().should_raise()
+    Spec(dont_raise_index_error).dont_raise_index_error().should_not_raise()
+    
 if __name__ == '__main__':
     verify()
