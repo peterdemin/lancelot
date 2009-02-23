@@ -121,14 +121,17 @@ class MockSpec:
     are actually verified)
     '''
     
-    def __init__(self, comparators=None):
+    def __init__(self, name='unnamed_mock', comparators=None):
         ''' A new mock specification: created for specifying collaborations. 
-        comparators are used when verifying that args supplied in a 
+        Args:
+        - name if specified will be used to supply meaningful messages
+        - comparators if any are used when verifying that args supplied in a 
         collaboration are those that were specified - by default an
         ExceptionValue comparator is used to verify Exception args,
         and a FloatValue comparator is used to verify float args'''
         self._is_collaborating = False
         self._collaborations = []
+        self._name = name
         self._comparators = {Exception:ExceptionValue, float:FloatValue}
         try:
             self._comparators.update(comparators)
@@ -153,7 +156,8 @@ class MockSpec:
     def _collaboration(self, name):
         ''' Return an instance of a collaboration (in "collaboration" mode) '''
         if len(self._collaborations) == 0:
-            msg = 'should not be collaborating with %s()' % name
+            msg = 'should not be collaborating with %s.%s()' % \
+                (self._name, name)
             raise UnmetSpecification(msg)
         return self._collaborations[0].result_of(name)
     
@@ -184,3 +188,5 @@ class MockSpec:
         ''' A specified collaboration has finished '''
         self._collaborations.remove(mock_call)
     
+    def name(self):
+        return self._name

@@ -107,15 +107,17 @@ class MockCall:
     
     def description(self):
         ''' Describe this part of the should_collaborate specification '''
-        return 'should be collaborating with %s%s' % \
-            (self._name, 
+        return 'should be collaborating with %s.%s%s' % \
+            (self._mock_spec.name(),
+             self._name, 
              _format_args(self._specified_args, self._specified_kwds))
     
     def result_of(self, name):
         ''' Check that the collaboration is as specified,
         and return the current value specified by will_return '''
         if name != self._name:
-            msg = '%s, not %s()' % (self.description(), name)
+            msg = '%s, not %s.%s()' % \
+                (self.description(), self._mock_spec.name(), name)
             raise UnmetSpecification(msg)
         return self._current_result
     
@@ -124,7 +126,10 @@ class MockCall:
         if self._mock_spec.comparable_args(self._specified_args) != args \
         or self._mock_spec.comparable_kwds(self._specified_kwds) != kwds:
             supplied = _format_args(args, kwds)
-            msg = '%s, not %s%s' % (self.description(), self._name, supplied)
+            msg = '%s, not %s.%s%s' % (self.description(), 
+                                       self._mock_spec.name(), 
+                                       self._name, 
+                                       supplied)
             raise UnmetSpecification(msg)
 
     def _current_result(self, *args, **kwds):
