@@ -135,10 +135,12 @@ class MockCall:
     def _current_result(self, *args, **kwds):
         ''' The current will_return value for this collaboration '''
         self._verify(*args, **kwds)
-        result = self._specified_result.next()
-        if self._specified_result.times_remaining() == 0:
-            self._mock_spec.collaboration_over(self)
-        return result
+        try:
+            result = self._specified_result.next()
+            return result
+        finally:
+            if self._specified_result.times_remaining() == 0:
+                self._mock_spec.collaboration_over(self)
 
 class MockResult:
     ''' Class responsible for supplying result values for a MockCall '''

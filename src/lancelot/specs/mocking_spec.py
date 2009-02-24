@@ -60,10 +60,13 @@ class MockCallResultOfBehaviour:
         spec.__call__().should_raise(StopIteration)
 
         value_error = ValueError("that's no ordinary rabbit")
-        mock_call = MockSpec().foo().will_raise(value_error)
+        mock_spec = MockSpec()
+        mock_call = mock_spec.foo().will_raise(value_error)
         mock_call_result = mock_call.result_of('foo')
         spec = Spec(mock_call_result)
         spec.__call__().should_raise(value_error)
+        # check that after exception raised the collaboration is 'over' 
+        Spec(mock_spec).verify().should_not_raise(UnmetSpecification)
 
     @verifiable
     def should_verify_args_specification(self):

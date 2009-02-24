@@ -186,7 +186,10 @@ class MockSpec:
         
     def collaboration_over(self, mock_call):
         ''' A specified collaboration has finished '''
-        self._collaborations.remove(mock_call)
+        try:
+            self._collaborations.remove(mock_call)
+        except ValueError:
+            pass
     
     def name(self):
         return self._name
