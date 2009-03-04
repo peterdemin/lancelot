@@ -192,4 +192,5 @@ class MockSpec:
             pass
     
     def name(self):
+        ''' The descriptive name of this mock (used in error messages) '''
         return self._name
