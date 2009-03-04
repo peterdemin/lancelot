@@ -6,7 +6,7 @@ Will be upgraded to setuptools when that becomes available for python3.
 from distutils.core import setup
 
 setup(name='lancelot', 
-      version='1.0-rc2',
+      version='1.0',
       packages=['lancelot', 'lancelot.specs', 'lancelot.examples'],
       data_files=[('', ['README.txt', 'COPYING', 'COPYING.LESSER'])],
       provides=['lancelot'],
@@ -25,7 +25,7 @@ be specified and verified using a DSL-like syntax, e.g.::
 ''',
       platforms = ["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
       classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
@@ -41,6 +41,6 @@ be specified and verified using a DSL-like syntax, e.g.::
       author='tim bacon',
       author_email='timbacon at gmail dotcom',
       url='http://withaherring.blogspot.com/',
-#Development Status :: 5 - Production/Stable
+#Development Status :: 4 - Beta
 #Development Status :: 6 - Mature
       )

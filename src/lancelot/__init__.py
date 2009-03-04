@@ -34,7 +34,7 @@ The latest source code is available at http://code.launchpad.net/lancelot.
 Copyright 2009 by the author(s). All rights reserved 
 '''
 
-__version__ = "1.0rc2"
+__version__ = "1.0"
 
 from lancelot.specification import MockSpec, Spec
 from lancelot.verification import grouping, verifiable, verify
