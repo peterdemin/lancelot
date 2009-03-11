@@ -37,7 +37,8 @@ class Comparator:
     def description(self):
         ''' Describe this comparator '''
         if self._prototype:
-            return '%s %r' % (type(self).__name__.lower(), self._prototype)
+            return '%s %s' % (type(self).__name__.lower(), 
+                              repr(self._prototype))
         return '%s' % type(self).__name__.lower()
 
 class EqualsEquals(Comparator):
@@ -49,7 +50,7 @@ class EqualsEquals(Comparator):
 
     def description(self):
         ''' Describe this comparator '''
-        return '== %r' % self._prototype
+        return '== %s' % repr(self._prototype)
 
 class SameAs(Comparator):
     ''' Comparator for handling comparison using "same". '''
@@ -60,7 +61,7 @@ class SameAs(Comparator):
 
     def description(self):
         ''' Describe this comparator '''
-        return 'same as %r' % self._prototype
+        return 'same as %s' % repr(self._prototype)
 
 class LessThan(Comparator):
     ''' Comparator for handling comparison using <. '''
@@ -74,7 +75,7 @@ class LessThan(Comparator):
         
     def description(self):
         ''' Describe this comparator '''
-        return '< %r' % self._prototype
+        return '< %s' % repr(self._prototype)
 
 class GreaterThan(Comparator):
     ''' Comparator for handling comparison using >. '''
@@ -88,7 +89,7 @@ class GreaterThan(Comparator):
 
     def description(self):
         ''' Describe this comparator '''
-        return '> %r' % self._prototype
+        return '> %s' % repr(self._prototype)
 
 class Contain(Comparator):
     ''' Comparator for handling comparison using "in" / "contains". '''
@@ -127,7 +128,7 @@ class ReprEquals(Comparator):
 
     def description(self):
         ''' Describe this comparator '''
-        return 'repr() value %r' % self._prototype
+        return 'repr() value %s' % repr(self._prototype)
 
 class Type(Comparator):
     ''' Comparator for handling comparison of type() of instances. '''
@@ -144,7 +145,7 @@ class Type(Comparator):
     def description(self):
         ''' Describe this comparator '''
         if isinstance(self._prototype, type):
-            return 'type %r' % self._prototype
+            return 'type %s' % repr(self._prototype)
         return 'type %r' % type(self._prototype)
 
 class ExceptionValue(Comparator):
@@ -163,7 +164,7 @@ class ExceptionValue(Comparator):
         ''' Describe this comparator '''
         if isinstance(self._prototype, type):
             return self._prototype.__name__
-        return '%r' % self._prototype
+        return '%s' % repr(self._prototype)
 
 class FloatValue(Comparator):
     ''' Comparator for handling float comparison with tolerance for FPA. '''
@@ -299,7 +300,7 @@ class LessThanOrEqual(OrComparator):
 
     def description(self):
         ''' Describe this comparator '''
-        return '<= %r' % self._prototype
+        return '<= %s' % repr(self._prototype)
 
 class GreaterThanOrEqual(OrComparator):
     ''' Comparator for making comparisons using >= . '''
@@ -311,4 +312,4 @@ class GreaterThanOrEqual(OrComparator):
         
     def description(self):
         ''' Describe this comparator '''
-        return '=> %r' % self._prototype
+        return '=> %s' % repr(self._prototype)

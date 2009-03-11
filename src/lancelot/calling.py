@@ -47,8 +47,8 @@ class WrapFunction:
 
 def _format_args(args, kwds):
     ''' Format args for prettier display '''
-    formatted_args = ['%r' % arg for arg in args]
-    formatted_args.extend(['%s=%r' % (kwd, value) 
+    formatted_args = ['%s' % repr(arg) for arg in args]
+    formatted_args.extend(['%s=%s' % (kwd, repr(value)) 
                            for kwd, value in kwds.items()])
     return '(%s)' % ','.join(formatted_args)
     
